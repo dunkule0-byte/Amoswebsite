@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi Loan Calculator</title>
 
-    <!-- ✅ Correct Telegram SDK -->
+    <!-- ✅ Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -153,7 +153,7 @@
         <p id="monthly" class="result-value">$98.33</p>
     </div>
 
-    <button class="btn-apply" onclick="goToStep1()">CODSO HADDA</button>
+    <button class="btn-apply" onclick="goToPage2()">CODSO HADDA</button>
 </div>
 
 <div class="footer">© 2025 Waafi Soomaaliya</div>
@@ -165,25 +165,25 @@
 
         if (!amtEl || !durEl) return;
 
-        const a = Number(amtEl.value);
-        const d = Number(durEl.value);
+        const amount = Number(amtEl.value) || 0;
+        const duration = Number(durEl.value) || 1;
 
-        document.getElementById('valAmt').innerText = `$${a.toLocaleString()}`;
-        document.getElementById('valDur').innerText = `${d} bilood`;
+        document.getElementById('valAmt').innerText = `$${amount.toLocaleString()}`;
+        document.getElementById('valDur').innerText = `${duration} bilood`;
 
-        // Monthly calculation (simple interest example)
-        const monthly = (a * 1.18) / d;
+        const monthly = (amount * 1.18) / duration;
         document.getElementById('monthly').innerText = `$${monthly.toFixed(2)}`;
     }
 
-    function goToStep1() {
-        const amount = document.getElementById('amt').value;
-        const duration = document.getElementById('dur').value;
+    function goToPage2() {
+        const amtEl = document.getElementById('amt');
+        const durEl = document.getElementById('dur');
 
-        localStorage.setItem('amount', amount);
-        localStorage.setItem('loanDuration', duration + " Bilood");
+        if (!amtEl || !durEl) return;
 
-        // ✅ Works with your Express route
+        localStorage.setItem('amount', amtEl.value);
+        localStorage.setItem('loanDuration', durEl.value + " Bilood");
+
         window.location.href = "/page2";
     }
 
@@ -191,13 +191,15 @@
         const tg = window.Telegram?.WebApp;
 
         if (tg) {
-            tg.ready();     // ✅ important fix
+            tg.ready();
             tg.expand();
         }
 
-        // Attach listeners safely
-        document.getElementById('amt').addEventListener('input', update);
-        document.getElementById('dur').addEventListener('input', update);
+        const amtEl = document.getElementById('amt');
+        const durEl = document.getElementById('dur');
+
+        if (amtEl) amtEl.addEventListener('input', update);
+        if (durEl) durEl.addEventListener('input', update);
 
         update();
     };
