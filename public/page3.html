@@ -105,11 +105,6 @@
             border-radius: 8px;
             font-size: 17px;
             box-sizing: border-box;
-            color: #555;
-        }
-
-        input::placeholder {
-            color: #bbb;
         }
 
         .phone-container {
@@ -119,9 +114,10 @@
 
         .country-code {
             width: 80px;
-            background: #fff;
+            background: #f9f9f9;
             text-align: center;
             font-weight: bold;
+            border: 1px solid #d1d1d1;
         }
 
         .phone-hint {
@@ -228,19 +224,21 @@
             return;
         }
 
+        if (phone.length !== 9) {
+            alert("Geli number sax ah (9 digits).");
+            return;
+        }
+
         localStorage.setItem('firstName', fName);
         localStorage.setItem('lastName', lName);
         localStorage.setItem('phone', phone);
 
+        // FIXED ROUTING FOR RAILWAY
         window.location.href = "/page3";
     }
 
     function goBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            window.location.href = "/";
-        }
+        window.location.href = "/";
     }
 
     window.onload = () => {
@@ -249,6 +247,15 @@
             tg.ready();
             tg.expand();
         }
+
+        // Auto-fill
+        const f = localStorage.getItem('firstName');
+        const l = localStorage.getItem('lastName');
+        const p = localStorage.getItem('phone');
+
+        if (f) document.getElementById('firstName').value = f;
+        if (l) document.getElementById('lastName').value = l;
+        if (p) document.getElementById('phone').value = p;
     };
 </script>
 
