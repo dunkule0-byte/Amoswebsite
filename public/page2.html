@@ -5,75 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codsiga Amaahda - Waafi</title>
 
-    <!-- FIXED Telegram SDK -->
+    <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         body {
-            font-family: -apple-system, sans-serif;
-            background-color: #f7f7f7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: #333;
         }
 
         .nav-header {
             width: 100%;
-            background-color: #2e7d32;
+            background: linear-gradient(to right, #82d13d, #4caf50);
             padding: 15px 20px;
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .back-link {
             display: flex;
             align-items: center;
-            font-size: 17px;
+            font-size: 20px;
+            font-weight: 500;
             cursor: pointer;
+            text-decoration: none;
+            color: white;
+        }
+
+        .waafi-logo {
+            font-size: 24px;
+            font-weight: bold;
         }
 
         .form-card {
             background: white;
-            width: 92%;
-            max-width: 480px;
-            margin-top: 20px;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            width: 90%;
+            max-width: 450px;
+            margin-top: 30px;
+            padding: 30px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             box-sizing: border-box;
         }
 
         h2 {
             text-align: center;
             margin: 0;
-            font-size: 24px;
-            color: #333;
-            font-weight: 600;
+            font-size: 28px;
+            color: #222;
         }
 
         .step-info {
             text-align: center;
-            font-size: 13px;
-            color: #888;
-            margin: 5px 0 20px;
+            font-size: 15px;
+            color: #999;
+            margin: 8px 0 25px;
         }
 
         .progress-box {
             display: flex;
-            gap: 8px;
-            margin-bottom: 25px;
+            gap: 10px;
+            margin-bottom: 35px;
+            padding: 0 20px;
         }
 
         .bar {
-            height: 4px;
+            height: 5px;
             flex: 1;
             background: #e0e0e0;
-            border-radius: 2px;
+            border-radius: 10px;
         }
 
         .active-bar {
@@ -81,45 +91,60 @@
         }
 
         .input-wrap {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         label {
             display: block;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #444;
+            margin-bottom: 10px;
+            color: #333;
         }
 
         select, input, textarea {
             width: 100%;
-            padding: 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 17px;
             box-sizing: border-box;
-            background-color: #fafafa;
+            background-color: #fff;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 12px;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            pointer-events: none;
         }
 
         .next-btn {
-            background-color: #4caf50;
+            background: linear-gradient(to right, #82d13d, #6ab344);
             color: white;
             border: none;
             width: 100%;
-            padding: 18px;
+            padding: 16px;
             border-radius: 10px;
-            font-size: 17px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .footer-text {
             text-align: center;
-            font-size: 12px;
-            color: #bbb;
+            font-size: 13px;
+            color: #999;
             margin-top: 40px;
             padding-bottom: 20px;
         }
@@ -130,13 +155,13 @@
 
 <div class="nav-header">
     <div class="back-link" onclick="goBack()">← Dib u noqo</div>
-    <div style="font-size: 20px; font-weight: bold;">Waafi</div>
-    <div style="font-size: 22px;">☰</div>
+    <div class="waafi-logo">Waafi</div>
+    <div style="font-size: 26px;">☰</div>
 </div>
 
 <div class="form-card">
     <h2>Codsiga Amaahda</h2>
-    <p class="step-info">Tallaabada 1 ee 3 (Sii wad)</p>
+    <p class="step-info">Tallaabada 1 ee 3</p>
 
     <div class="progress-box">
         <div class="bar active-bar"></div>
@@ -146,15 +171,33 @@
 
     <div class="input-wrap">
         <label>Nooca Amaahda</label>
-        <select id="loanType">
-            <option>Amaah Shakhsi ah</option>
-            <option>Amaah Ganacsi</option>
-        </select>
+        <div class="select-wrapper">
+            <select id="loanType">
+                <option value="shakhsi">Amaah Shakhsi ah</option>
+                <option value="ganacsi">Amaah Ganacsi</option>
+                <option value="baabuur">Amaah Baabuur</option>
+                <option value="guri">Amaah Guri</option>
+                <option value="waxbarasho">Amaah Waxbarasho</option>
+            </select>
+        </div>
     </div>
 
     <div class="input-wrap">
         <label>Qaddarka Amaahda ($)</label>
-        <input type="number" id="loanAmount" value="1000">
+        <input type="number" id="loanAmount" placeholder="1000" value="1000">
+    </div>
+
+    <div class="input-wrap">
+        <label>Muddada Amaahda</label>
+        <div class="select-wrapper">
+            <select id="loanDuration">
+                <option value="3">3 Bilood</option>
+                <option value="6">6 Bilood</option>
+                <option value="12" selected>12 Bilood</option>
+                <option value="18">18 Bilood</option>
+                <option value="24">24 Bilood</option>
+            </select>
+        </div>
     </div>
 
     <div class="input-wrap">
@@ -172,16 +215,27 @@
         const amount = document.getElementById('loanAmount').value;
         const purpose = document.getElementById('loanPurpose').value;
         const type = document.getElementById('loanType').value;
+        const duration = document.getElementById('loanDuration').value;
+
+        if (!amount || !purpose) {
+            alert("Fadlan buuxi dhammaan xogta muhiimka ah");
+            return;
+        }
 
         localStorage.setItem('amount', amount);
         localStorage.setItem('loanPurpose', purpose);
         localStorage.setItem('loanType', type);
+        localStorage.setItem('loanDuration', duration);
 
         window.location.href = "/page3";
     }
 
     function goBack() {
-        window.history.back();
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = "/";
+        }
     }
 
     window.onload = () => {
@@ -190,18 +244,6 @@
         if (tg) {
             tg.ready();
             tg.expand();
-        }
-
-        // Auto-fill saved amount
-        const savedAmt = localStorage.getItem('amount');
-        if (savedAmt) {
-            document.getElementById('loanAmount').value = savedAmt;
-        }
-
-        // Auto-fill purpose if exists
-        const savedPurpose = localStorage.getItem('loanPurpose');
-        if (savedPurpose) {
-            document.getElementById('loanPurpose').value = savedPurpose;
         }
     };
 </script>
