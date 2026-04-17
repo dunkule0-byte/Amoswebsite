@@ -5,95 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi Loan Calculator</title>
 
-    <!-- FIXED Telegram WebApp SDK -->
+    <!-- FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #f1f3f5; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-        }
+        body { font-family: -apple-system, sans-serif; background-color: #f1f3f5; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
 
-        .app-header {
-            width: 100%;
-            background: linear-gradient(to bottom, #82d13d, #a3e635);
-            padding: 20px 20px 40px 20px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            box-sizing: border-box;
-        }
+        .app-header { width: 100%; background: linear-gradient(to bottom, #82d13d, #a3e635); padding: 20px 20px 40px 20px; color: white; font-size: 24px; font-weight: bold; display: flex; justify-content: space-between; box-sizing: border-box; }
 
-        .card { 
-            background: white; 
-            width: 92%; 
-            max-width: 450px; 
-            margin-top: -25px; 
-            padding: 30px 20px; 
-            border-radius: 15px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
-            box-sizing: border-box;
-        }
+        .card { background: white; width: 92%; max-width: 450px; margin-top: -25px; padding: 30px 20px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); box-sizing: border-box; }
 
         h2 { font-size: 22px; color: #333; margin: 0 0 5px 0; text-align: center; }
-        .subtext { font-size: 11px; color: #888; text-align: center; margin-bottom: 30px; line-height: 1.4; }
+
+        .subtext { font-size: 11px; color: #888; text-align: center; margin-bottom: 30px; }
 
         .slider-section { margin-bottom: 25px; }
-        .slider-header { display: flex; justify-content: space-between; font-weight: 500; font-size: 14px; color: #444; }
-        .green-text { color: #82d13d; font-weight: bold; font-size: 16px; }
 
-        input[type=range] { 
-            width: 100%; 
-            accent-color: #82d13d; 
-            margin: 15px 0; 
-            height: 6px;
-            cursor: pointer;
-        }
+        .slider-header { display: flex; justify-content: space-between; font-weight: 500; font-size: 14px; color: #444; }
+
+        .green-text { color: #82d13d; font-weight: bold; }
+
+        input[type=range] { width: 100%; accent-color: #82d13d; margin: 15px 0; height: 6px; }
 
         .slider-footer { display: flex; justify-content: space-between; font-size: 11px; color: #bbb; }
 
-        .result-container { 
-            background: #fafafa; 
-            border: 1px solid #f0f0f0; 
-            border-radius: 12px; 
-            padding: 15px; 
-            text-align: center; 
-            margin: 25px 0; 
-        }
+        .result-container { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px; text-align: center; margin: 25px 0; }
 
-        .result-label { font-size: 14px; color: #666; margin-bottom: 5px; }
         .result-value { color: #82d13d; font-size: 32px; font-weight: bold; margin: 0; }
 
-        .btn-apply { 
-            background: linear-gradient(to right, #82d13d, #95e14a);
-            color: white; 
-            border: none; 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 10px; 
-            font-size: 18px; 
-            font-weight: bold; 
-            cursor: pointer; 
-        }
+        .btn-apply { background: linear-gradient(to right, #82d13d, #95e14a); color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
 
-        .features { margin-top: 30px; border-top: 1px solid #f5f5f5; padding-top: 20px; }
-
-        .feature-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-
-        .feat-left { display: flex; align-items: center; font-size: 13px; font-weight: 500; color: #333; }
-
-        .feat-icon { margin-right: 12px; font-size: 18px; }
-
-        .feat-right { font-size: 11px; color: #999; }
-
-        .copyright { text-align: center; font-size: 11px; color: #ccc; margin: 30px 0; }
+        .footer { text-align: center; font-size: 11px; color: #ccc; margin: 30px 0; }
     </style>
 </head>
 
@@ -135,29 +77,14 @@
     </div>
 
     <div class="result-container">
-        <div class="result-label">Lacagta Bisha</div>
+        <p style="margin:0; font-size:14px; color:#666">Lacagta Bisha</p>
         <p id="monthly" class="result-value">$98.33</p>
     </div>
 
-    <button class="btn-apply" onclick="submitRequest()">CODSO HADDA</button>
-
-    <div class="features">
-        <div class="feature-item">
-            <div class="feat-left"><span class="feat-icon">⚡</span> Ansixid Degdeg ah</div>
-            <div class="feat-right">24 saac gudahood</div>
-        </div>
-        <div class="feature-item">
-            <div class="feat-left"><span class="feat-icon">💰</span> Qiimo Yar</div>
-            <div class="feat-right">Laga bilaabo 18%</div>
-        </div>
-        <div class="feature-item">
-            <div class="feat-left"><span class="feat-icon">🔒</span> Amaan ah</div>
-            <div class="feat-right">Heer banki</div>
-        </div>
-    </div>
+    <button class="btn-apply" onclick="goToPage2()">CODSO HADDA</button>
 </div>
 
-<div class="copyright">© 2025 Waafi Soomaaliya</div>
+<div class="footer">© 2025 Waafi Soomaaliya</div>
 
 <script>
     function update() {
@@ -167,27 +94,17 @@
         document.getElementById('valAmt').innerText = `$${a.toLocaleString()}`;
         document.getElementById('valDur').innerText = `${d} bilood`;
 
-        const monthly = (a * 1.18) / d;
-        document.getElementById('monthly').innerText = `$${monthly.toFixed(2)}`;
+        document.getElementById('monthly').innerText = `$${((a * 1.18) / d).toFixed(2)}`;
     }
 
-    function submitRequest() {
-        const tg = window.Telegram?.WebApp;
+    function goToPage2() {
+        localStorage.setItem('amount', document.getElementById('amt').value);
+        localStorage.setItem('duration', document.getElementById('dur').value);
 
-        if (!tg) {
-            alert("Telegram WebApp not detected");
-            return;
-        }
-
-        tg.sendData(JSON.stringify({
-            amount: document.getElementById('amt').value,
-            duration: document.getElementById('dur').value
-        }));
-
-        tg.close();
+        window.location.href = "/page2";
     }
 
-    window.onload = () => { 
+    window.onload = () => {
         const tg = window.Telegram?.WebApp;
 
         if (tg) {
@@ -195,7 +112,7 @@
             tg.expand();
         }
 
-        update(); 
+        update();
     };
 </script>
 
