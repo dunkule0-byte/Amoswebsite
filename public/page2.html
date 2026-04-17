@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Codsiga Amaahda - Waafi</title>
+    <title>Codsiga Amaahda - Step 1</title>
 
     <!-- FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, sans-serif;
             background-color: #f5f5f5;
             margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #333;
         }
 
         .nav-header {
@@ -29,12 +27,6 @@
             justify-content: space-between;
             align-items: center;
             box-sizing: border-box;
-        }
-
-        .back-link {
-            cursor: pointer;
-            font-size: 20px;
-            font-weight: 500;
         }
 
         .waafi-logo {
@@ -114,6 +106,7 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 15px;
+            text-transform: uppercase;
         }
 
         .footer-text {
@@ -123,13 +116,17 @@
             margin-top: 40px;
             padding-bottom: 20px;
         }
+
+        .back-btn {
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
 
 <div class="nav-header">
-    <div class="back-link" onclick="goBack()">← Dib u noqo</div>
+    <div class="back-btn" onclick="goBack()">← Dib u noqo</div>
     <div class="waafi-logo">Waafi</div>
     <div style="font-size: 26px;">☰</div>
 </div>
@@ -147,27 +144,21 @@
     <div class="input-wrap">
         <label>Nooca Amaahda</label>
         <select id="loanType">
-            <option value="Amaah Shakhsi">Amaah Shakhsi</option>
+            <option value="Amaah Shakhsi ah">Amaah Shakhsi ah</option>
             <option value="Amaah Ganacsi">Amaah Ganacsi</option>
-            <option value="Amaah Baabuur">Amaah Baabuur</option>
-            <option value="Amaah Guri">Amaah Guri</option>
-            <option value="Amaah Waxbarasho">Amaah Waxbarasho</option>
         </select>
     </div>
 
     <div class="input-wrap">
         <label>Qaddarka Amaahda ($)</label>
-        <input type="number" id="loanAmount" placeholder="1000" value="1000">
+        <input type="number" id="loanAmount" placeholder="1000" min="1">
     </div>
 
     <div class="input-wrap">
         <label>Muddada Amaahda</label>
         <select id="loanDuration">
-            <option value="3">3 Bilood</option>
-            <option value="6">6 Bilood</option>
-            <option value="12" selected>12 Bilood</option>
-            <option value="18">18 Bilood</option>
-            <option value="24">24 Bilood</option>
+            <option value="6 Bilood">6 Bilood</option>
+            <option value="12 Bilood" selected>12 Bilood</option>
         </select>
     </div>
 
@@ -182,50 +173,41 @@
 <div class="footer-text">© 2025 Waafi Soomaaliya</div>
 
 <script>
-    function goNext() {
-        const amount = document.getElementById('loanAmount').value.trim();
-        const purpose = document.getElementById('loanPurpose').value.trim();
-        const type = document.getElementById('loanType').value;
-        const duration = document.getElementById('loanDuration').value;
+function goNext() {
+    const amount = document.getElementById('loanAmount').value.trim();
+    const purpose = document.getElementById('loanPurpose').value.trim();
+    const type = document.getElementById('loanType').value;
+    const duration = document.getElementById('loanDuration').value;
 
-        if (!amount || Number(amount) <= 0) {
-            alert("Fadlan geli qaddar sax ah.");
-            return;
-        }
-
-        if (purpose.length < 3) {
-            alert("Fadlan sharax ujeedada amaahda.");
-            return;
-        }
-
-        localStorage.setItem('amount', amount);
-        localStorage.setItem('loanPurpose', purpose);
-        localStorage.setItem('loanType', type);
-        localStorage.setItem('loanDuration', duration);
-
-        // FIXED: must match your Express route system
-        window.location.href = "/page3";
+    if (!amount || amount <= 0) {
+        alert("Geli qaddar sax ah.");
+        return;
     }
 
-    function goBack() {
-        window.location.href = "/";
+    if (!purpose || purpose.length < 3) {
+        alert("Fadlan sharax ujeedada amaahda.");
+        return;
     }
 
-    window.onload = () => {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-        }
+    localStorage.setItem('amount', amount);
+    localStorage.setItem('loanPurpose', purpose);
+    localStorage.setItem('loanType', type);
+    localStorage.setItem('loanDuration', duration);
 
-        // restore values if user returns
-        if (localStorage.getItem('amount')) {
-            document.getElementById('loanAmount').value = localStorage.getItem('amount');
-        }
-        if (localStorage.getItem('loanPurpose')) {
-            document.getElementById('loanPurpose').value = localStorage.getItem('loanPurpose');
-        }
-    };
+    window.location.href = "/page2";
+}
+
+function goBack() {
+    window.location.href = "/";
+}
+
+window.onload = () => {
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
+    }
+};
 </script>
 
 </body>
