@@ -25,55 +25,68 @@ app.get('/:page', (req, res) => {
 
     res.sendFile(filePath, (err) => {
         if (err) {
-            console.error(`File not found: ${filePath}`);
             res.status(404).send("Boggaan lama helin (Page not found)");
         }
     });
 });
 
-// 5. Start Command (FIXED inline_keyboard error)
+// 5. Start Command (FIXED BUTTON)
 bot.start((ctx) => {
     ctx.reply('Ku soo dhowaad Waafi Amaah! 👇', {
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: "Bilow Codsiga", web_app: { url: "https://YOUR_DOMAIN_HERE/" } }
+                    {
+                        text: "🚀 Fur App",
+                        web_app: { url: process.env.WEBAPP_URL || "https://your-domain.com" }
+                    }
                 ]
             ]
         }
     });
 });
 
-// 6. Handle Web App Data (FINAL FIXED VERSION)
-bot.on('message', (ctx) => {
-    if (ctx.message?.web_app_data) {
-        try {
-            const data = JSON.parse(ctx.message.web_app_data.data);
+// 6. Handle Web App Data
+bot.on('message', async (ctx) => {
+    const webAppData = ctx.message?.web_app_data;
 
-            const summary =
-                `✅ CODSI CUSUB WAA LA HELAY!\n\n` +
-                `👤 Magaca: ${data.firstName || ''} ${data.lastName || ''}\n` +
-                `📞 Taleefanka: +252${data.phone || ''}\n` +
-                `💰 Lacagta: $${data.amount || 'N/A'}\n` +
-                `📆 Muddada: ${data.duration || 'N/A'}\n` +
-                `💼 Shaqada: ${data.jobStatus || 'N/A'}\n` +
-                `💵 Dakhliga: $${data.income || 'N/A'}\n` +
-                `📝 Ujeedada: ${data.loanPurpose || 'N/A'}\n\n` +
-                `⏳ Fadlan dib u eegis ku samee.`;
+    if (!webAppData) return;
 
-            ctx.reply(summary);
+    try {
+        const data = JSON.parse(webAppData.data);
 
-        } catch (e) {
-            console.error("Data error:", e);
-            ctx.reply('❌ Cillad ayaa ku dhacday akhrinta xogta.');
-        }
+        const summary =
+            `✅ CODSI CUSUB WAA LA HELAY!\n\n` +
+            `👤 Magaca: ${data.firstName || ''} ${data.lastName || ''}\n` +
+            `📞 Taleefanka: +252${data.phone || ''}\n` +
+            `💰 Lacagta: $${data.amount || 'N/A'}\n` +
+            `📆 Muddada: ${data.duration || 'N/A'}\n` +
+            `💼 Shaqada: ${data.jobStatus || 'N/A'}\n` +
+            `💵 Dakhliga: $${data.income || 'N/A'}\n` +
+            `📝 Ujeedada: ${data.loanPurpose || 'N/A'}\n\n` +
+            `⏳ Fadlan dib u eegis ku samee.`;
+
+        await ctx.reply(summary);
+
+    } catch (err) {
+        console.error("Data error:", err);
+        ctx.reply("❌ Cillad ayaa ku dhacday akhrinta xogta.");
     }
 });
 
-// 7. Start Server
-app.listen(PORT, '0.0.0.0', () => {
+// 7. Start Server (SAFE + FIXED BOT LAUNCH)
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`✅ Server is running on port ${PORT}`);
-    bot.launch().then(() => console.log('✅ Telegram Bot launched'));
+
+    try {
+        // prevent webhook conflicts (409 error fix)
+        await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+
+        await bot.launch();
+        console.log('✅ Telegram Bot launched successfully');
+    } catch (err) {
+        console.error('❌ Bot launch failed:', err.message);
+    }
 });
 
 // 8. Safe stop
