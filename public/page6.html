@@ -5,43 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi - Galitaanka</title>
 
-    <!-- ✅ FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #fff; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh;
+        }
         
-        .header-box { width: 100%; background: linear-gradient(to bottom, #82d13d, #a3e635); padding: 40px 20px; color: white; text-align: center; }
+        .header-box { 
+            width: 100%; 
+            background: linear-gradient(to bottom, #82d13d, #a3e635); 
+            padding: 40px 20px; 
+            color: white; 
+            text-align: center;
+        }
         
+        .main-content { 
+            width: 90%; 
+            max-width: 400px; 
+            margin: 40px auto 0;
+            text-align: center;
+        }
+
+        .spacer {
+            flex-grow: 1;
+            min-height: 40px;
+        }
+
         .footer-box { 
             width: 100%; 
             background: linear-gradient(to top, #82d13d, #a3e635); 
             padding: 50px 20px 30px; 
             color: white; 
             text-align: center; 
-            margin-top: auto;
-            border-top-left-radius: 50% 20px;
-            border-top-right-radius: 50% 20px;
+            border-top-left-radius: 50% 30px;
+            border-top-right-radius: 50% 30px;
         }
         
         .logo-text { font-size: 36px; font-weight: bold; margin: 0; }
         .sub-text { font-size: 15px; margin-top: 8px; opacity: 0.9; }
         .version-text { font-size: 12px; margin-top: 15px; opacity: 0.8; }
-        .terms-text { font-size: 11px; margin-top: 15px; padding: 0 40px; line-height: 1.4; }
+        .terms-text { font-size: 11px; margin-top: 15px; padding: 0 40px; }
 
-        .main-content { width: 90%; max-width: 400px; margin-top: 40px; text-align: center; flex-grow: 1; }
         h2 { color: #555; font-size: 24px; margin-bottom: 25px; }
 
-        .phone-display { border: 2px solid #82d13d; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 20px; }
-        .flag-icon { font-size: 24px; }
+        .phone-display { 
+            border: 2px solid #82d13d; 
+            border-radius: 12px; 
+            padding: 16px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 40px; 
+            font-size: 20px;
+        }
 
-        .pin-label { color: #888; margin-bottom: 20px; font-size: 16px; }
+        .pin-label { color: #888; margin-bottom: 20px; }
+
         .pin-container { display: flex; justify-content: center; align-items: center; gap: 8px; }
 
         .pin-input-group { display: flex; gap: 8px; }
-        .pin-box { width: 55px; height: 55px; border: 1.5px solid #82d13d; border-radius: 10px; text-align: center; font-size: 24px; font-weight: bold; }
 
-        .toggle-eye { font-size: 22px; cursor: pointer; margin-left: 10px; }
+        .pin-box { 
+            width: 55px; 
+            height: 55px; 
+            border: 1.5px solid #82d13d; 
+            border-radius: 10px; 
+            text-align: center; 
+            font-size: 24px; 
+            font-weight: bold;
+        }
+
+        .toggle-eye { cursor: pointer; margin-left: 10px; }
 
         .forgot-pin { color: #888; font-size: 14px; margin-top: 15px; display: block; }
 
@@ -53,14 +93,13 @@
             padding: 18px; 
             border-radius: 10px; 
             font-size: 20px; 
-            font-weight: bold; 
-            margin-top: 60px; 
+            margin-top: 50px; 
             cursor: not-allowed;
         }
 
         .btn-gal.active { 
             background-color: #82d13d; 
-            cursor: pointer; 
+            cursor: pointer;
         }
     </style>
 </head>
@@ -76,7 +115,7 @@
     <h2>Gal</h2>
 
     <div class="phone-display">
-        <span class="flag-icon">🇸🇴</span>
+        <span>🇸🇴</span>
         <span id="displayPhone">+252 076055999</span>
     </div>
 
@@ -84,10 +123,10 @@
     
     <div class="pin-container">
         <div class="pin-input-group">
-            <input type="password" maxlength="1" class="pin-box">
-            <input type="password" maxlength="1" class="pin-box">
-            <input type="password" maxlength="1" class="pin-box">
-            <input type="password" maxlength="1" class="pin-box">
+            <input type="password" inputmode="numeric" maxlength="1" class="pin-box">
+            <input type="password" inputmode="numeric" maxlength="1" class="pin-box">
+            <input type="password" inputmode="numeric" maxlength="1" class="pin-box">
+            <input type="password" inputmode="numeric" maxlength="1" class="pin-box">
         </div>
         <span class="toggle-eye" id="eyeIcon">👁️</span>
     </div>
@@ -96,6 +135,8 @@
 
     <button id="loginBtn" class="btn-gal" disabled>GAL</button>
 </div>
+
+<div class="spacer"></div>
 
 <div class="footer-box">
     <p class="logo-text">Waafi</p>
@@ -110,11 +151,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById('loginBtn');
     const eye = document.getElementById('eyeIcon');
 
+    if (!pinBoxes.length || !loginBtn || !eye) return;
+
     pinBoxes.forEach((box, index) => {
         box.addEventListener('input', () => {
-            if (box.value.length === 1 && index < 3) {
+            box.value = box.value.replace(/\D/g, ''); // numbers only
+
+            if (box.value && index < pinBoxes.length - 1) {
                 pinBoxes[index + 1].focus();
             }
+
             checkInputs();
         });
 
@@ -135,20 +181,23 @@ document.addEventListener("DOMContentLoaded", () => {
         pinBoxes.forEach(box => {
             box.type = box.type === "password" ? "text" : "password";
         });
-        eye.innerText = eye.innerText === "👁️" ? "🫣" : "👁️";
+        eye.textContent = eye.textContent === "👁️" ? "🫣" : "👁️";
     });
 
     loginBtn.addEventListener('click', () => {
         window.location.href = "/page7";
     });
 
-    // Telegram init
-    window.Telegram?.WebApp?.expand();
+    // Telegram safe init
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
 
-    // Auto-fill phone
+    // Load phone
     const phone = localStorage.getItem('phone');
     if (phone) {
-        document.getElementById('displayPhone').innerText = `+252 ${phone}`;
+        document.getElementById('displayPhone').textContent = `+252 ${phone}`;
     }
 });
 </script>
