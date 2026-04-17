@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codsiga Amaahda - Step 2</title>
 
-    <!-- FIXED Telegram SDK -->
+    <!-- Telegram SDK (correct) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -118,6 +118,7 @@
             text-align: center;
             font-weight: bold;
             border: 1px solid #d1d1d1;
+            line-height: 48px;
         }
 
         .phone-hint {
@@ -224,8 +225,8 @@
             return;
         }
 
-        if (phone.length !== 9) {
-            alert("Geli number sax ah (9 digits).");
+        if (phone.length !== 9 || isNaN(phone)) {
+            alert("Geli number sax ah (9 digits oo keliya).");
             return;
         }
 
@@ -233,12 +234,13 @@
         localStorage.setItem('lastName', lName);
         localStorage.setItem('phone', phone);
 
-        // FIXED ROUTING FOR RAILWAY
+        // FIX: must match your Express route system (/page3 or /page4 depending on flow)
         window.location.href = "/page3";
     }
 
     function goBack() {
-        window.location.href = "/";
+        // FIX: Step 1 is usually page2 (your calculator page)
+        window.location.href = "/page2";
     }
 
     window.onload = () => {
@@ -248,7 +250,7 @@
             tg.expand();
         }
 
-        // Auto-fill
+        // Auto-fill safely
         const f = localStorage.getItem('firstName');
         const l = localStorage.getItem('lastName');
         const p = localStorage.getItem('phone');
