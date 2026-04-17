@@ -4,41 +4,30 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-
-// 1. PORT FIX (Railway compatible)
 const PORT = process.env.PORT || 8080;
 
-// 2. MIDDLEWARE
+// 1. Initialize Bot
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+// 2. Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. ROUTES
+// 3. Main Web Page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/status', (req, res) => {
-    res.send('✅ Waafi Server is Live!');
-});
-
-// 4. BOT SETUP SAFETY CHECK
-if (!process.env.BOT_TOKEN) {
-    console.error("❌ BOT_TOKEN is missing in .env");
-    process.exit(1);
-}
-
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
-// 5. START COMMAND (FIXED inline keyboard)
+// 4. START COMMAND (FIXED BUTTON)
 bot.start((ctx) => {
-    ctx.reply('Ku soo dhowaad Waafi Amaah!', {
+    ctx.reply('Ku soo dhowaad Waafi Amaah! 👇', {
         reply_markup: {
             inline_keyboard: [
                 [
                     {
-                        text: "💰 Codso Amaah",
+                        text: "🚀 FUR AMAAH APP",
                         web_app: {
-                            url: "https://your-domain.com" // CHANGE THIS
+                            url: "https://waafiamaah-production.up.railway.app"
                         }
                     }
                 ]
@@ -47,40 +36,31 @@ bot.start((ctx) => {
     });
 });
 
-// 6. LOAN APPLICATION API
-app.post('/apply-loan', async (req, res) => {
-    try {
-        const { amount, duration, userId } = req.body;
+// 5. HANDLE WEB APP DATA
+bot.on('message', (ctx) => {
+    if (ctx.message.web_app_data) {
+        try {
+            const data = JSON.parse(ctx.message.web_app_data.data);
 
-        if (!amount || !duration || !userId) {
-            return res.status(400).json({
-                success: false,
-                message: "Missing fields"
-            });
+            ctx.reply(
+                `✅ Codsi waa la helay!\n\n` +
+                `💰 Lacagta: $${data.amount}\n` +
+                `📆 Muddada: ${data.duration} bilood\n\n` +
+                `⏳ Waxaan kula soo xiriiri doonaa 24 saac gudahood.`
+            );
+
+        } catch (e) {
+            ctx.reply('❌ Cillad ayaa dhacday.');
         }
-
-        console.log(`📥 Codsi Cusub: User ${userId} | Amount: ${amount} | Duration: ${duration}`);
-
-        return res.status(200).json({
-            success: true,
-            message: "Codsiga waa la helay!"
-        });
-
-    } catch (error) {
-        console.error("❌ Error:", error.message);
-        return res.status(500).json({ success: false });
     }
 });
 
-// 7. START SERVER (Railway requires 0.0.0.0)
+// 6. START SERVER + BOT
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server active on port ${PORT}`);
-
-    bot.launch()
-        .then(() => console.log("🤖 Bot is active"))
-        .catch(err => console.error("❌ Bot error:", err));
+    console.log(`✅ Server live on port ${PORT}`);
+    bot.launch();
 });
 
-// 8. Graceful shutdown
+// 7. SAFE STOP
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
