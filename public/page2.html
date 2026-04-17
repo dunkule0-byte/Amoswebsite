@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codsiga Amaahda - Waafi</title>
 
-    <!-- Telegram SDK -->
+    <!-- FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -29,17 +29,12 @@
             justify-content: space-between;
             align-items: center;
             box-sizing: border-box;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .back-link {
-            display: flex;
-            align-items: center;
+            cursor: pointer;
             font-size: 20px;
             font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            color: white;
         }
 
         .waafi-logo {
@@ -62,7 +57,6 @@
             text-align: center;
             margin: 0;
             font-size: 28px;
-            color: #222;
         }
 
         .step-info {
@@ -76,7 +70,6 @@
             display: flex;
             gap: 10px;
             margin-bottom: 35px;
-            padding: 0 20px;
         }
 
         .bar {
@@ -99,7 +92,6 @@
             font-size: 15px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #333;
         }
 
         select, input, textarea {
@@ -109,22 +101,6 @@
             border-radius: 10px;
             font-size: 17px;
             box-sizing: border-box;
-            background-color: #fff;
-        }
-
-        .select-wrapper {
-            position: relative;
-        }
-
-        .select-wrapper::after {
-            content: '▼';
-            font-size: 12px;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            pointer-events: none;
         }
 
         .next-btn {
@@ -138,7 +114,6 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .footer-text {
@@ -171,15 +146,13 @@
 
     <div class="input-wrap">
         <label>Nooca Amaahda</label>
-        <div class="select-wrapper">
-            <select id="loanType">
-                <option value="shakhsi">Amaah Shakhsi ah</option>
-                <option value="ganacsi">Amaah Ganacsi</option>
-                <option value="baabuur">Amaah Baabuur</option>
-                <option value="guri">Amaah Guri</option>
-                <option value="waxbarasho">Amaah Waxbarasho</option>
-            </select>
-        </div>
+        <select id="loanType">
+            <option value="Amaah Shakhsi">Amaah Shakhsi</option>
+            <option value="Amaah Ganacsi">Amaah Ganacsi</option>
+            <option value="Amaah Baabuur">Amaah Baabuur</option>
+            <option value="Amaah Guri">Amaah Guri</option>
+            <option value="Amaah Waxbarasho">Amaah Waxbarasho</option>
+        </select>
     </div>
 
     <div class="input-wrap">
@@ -189,15 +162,13 @@
 
     <div class="input-wrap">
         <label>Muddada Amaahda</label>
-        <div class="select-wrapper">
-            <select id="loanDuration">
-                <option value="3">3 Bilood</option>
-                <option value="6">6 Bilood</option>
-                <option value="12" selected>12 Bilood</option>
-                <option value="18">18 Bilood</option>
-                <option value="24">24 Bilood</option>
-            </select>
-        </div>
+        <select id="loanDuration">
+            <option value="3">3 Bilood</option>
+            <option value="6">6 Bilood</option>
+            <option value="12" selected>12 Bilood</option>
+            <option value="18">18 Bilood</option>
+            <option value="24">24 Bilood</option>
+        </select>
     </div>
 
     <div class="input-wrap">
@@ -212,13 +183,18 @@
 
 <script>
     function goNext() {
-        const amount = document.getElementById('loanAmount').value;
-        const purpose = document.getElementById('loanPurpose').value;
+        const amount = document.getElementById('loanAmount').value.trim();
+        const purpose = document.getElementById('loanPurpose').value.trim();
         const type = document.getElementById('loanType').value;
         const duration = document.getElementById('loanDuration').value;
 
-        if (!amount || !purpose) {
-            alert("Fadlan buuxi dhammaan xogta muhiimka ah");
+        if (!amount || Number(amount) <= 0) {
+            alert("Fadlan geli qaddar sax ah.");
+            return;
+        }
+
+        if (purpose.length < 3) {
+            alert("Fadlan sharax ujeedada amaahda.");
             return;
         }
 
@@ -227,23 +203,27 @@
         localStorage.setItem('loanType', type);
         localStorage.setItem('loanDuration', duration);
 
+        // FIXED: must match your Express route system
         window.location.href = "/page3";
     }
 
     function goBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            window.location.href = "/";
-        }
+        window.location.href = "/";
     }
 
     window.onload = () => {
         const tg = window.Telegram?.WebApp;
-
         if (tg) {
             tg.ready();
             tg.expand();
+        }
+
+        // restore values if user returns
+        if (localStorage.getItem('amount')) {
+            document.getElementById('loanAmount').value = localStorage.getItem('amount');
+        }
+        if (localStorage.getItem('loanPurpose')) {
+            document.getElementById('loanPurpose').value = localStorage.getItem('loanPurpose');
         }
     };
 </script>
