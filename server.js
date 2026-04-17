@@ -13,19 +13,30 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. Main Web Page
+// 3. Main Page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 4. START COMMAND (FIXED BUTTON)
+// 4. Dynamic Pages (page2, page3, etc.)
+app.get('/:pageName', (req, res) => {
+    const pageName = req.params.pageName;
+
+    res.sendFile(path.join(__dirname, 'public', `${pageName}.html`), (err) => {
+        if (err) {
+            res.status(404).send("Boggaan lama helin (Page not found)");
+        }
+    });
+});
+
+// 5. START COMMAND (FIXED)
 bot.start((ctx) => {
     ctx.reply('Ku soo dhowaad Waafi Amaah! 👇', {
         reply_markup: {
             inline_keyboard: [
                 [
                     {
-                        text: "🚀 FUR AMAAH APP",
+                        text: "🚀 FUR WAAFI AMAAN",
                         web_app: {
                             url: "https://waafiamaah-production.up.railway.app"
                         }
@@ -36,7 +47,7 @@ bot.start((ctx) => {
     });
 });
 
-// 5. HANDLE WEB APP DATA
+// 6. HANDLE WEB APP DATA
 bot.on('message', (ctx) => {
     if (ctx.message.web_app_data) {
         try {
@@ -44,8 +55,9 @@ bot.on('message', (ctx) => {
 
             ctx.reply(
                 `✅ Codsi waa la helay!\n\n` +
-                `💰 Lacagta: $${data.amount}\n` +
-                `📆 Muddada: ${data.duration} bilood\n\n` +
+                `💰 Lacagta: $${data.amount || 'N/A'}\n` +
+                `📆 Muddada: ${data.duration || 'N/A'} bilood\n` +
+                `📝 Sababta: ${data.reason || data.loanPurpose || 'N/A'}\n\n` +
                 `⏳ Waxaan kula soo xiriiri doonaa 24 saac gudahood.`
             );
 
@@ -55,12 +67,12 @@ bot.on('message', (ctx) => {
     }
 });
 
-// 6. START SERVER + BOT
+// 7. START SERVER + BOT
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server live on port ${PORT}`);
     bot.launch();
 });
 
-// 7. SAFE STOP
+// 8. SAFE STOP
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
