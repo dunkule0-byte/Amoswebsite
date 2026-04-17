@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waafi Loan Calculator</title>
+
+    <!-- ✅ FIXED Telegram WebApp Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 15px; display: flex; flex-direction: column; min-height: 100vh; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 450px; margin: auto; width: 100%; box-sizing: border-box; }
+        .header { color: #82d13d; font-size: 28px; font-weight: bold; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h2 { font-size: 24px; color: #333; margin: 0 0 10px 0; text-align: center; }
+        .subtext { font-size: 13px; color: #666; text-align: center; margin-bottom: 30px; }
+        
+        .slider-section { margin-bottom: 25px; }
+        .slider-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 500; font-size: 15px; }
+        .green-text { color: #82d13d; font-weight: bold; }
+        input[type=range] { width: 100%; accent-color: #82d13d; height: 8px; border-radius: 5px; cursor: pointer; }
+        .slider-footer { display: flex; justify-content: space-between; font-size: 12px; color: #999; margin-top: 5px; }
+
+        .result-container { background: #fcfcfc; border: 1px solid #f0f0f0; border-radius: 10px; padding: 20px; text-align: center; margin: 30px 0; }
+        .result-label { color: #555; font-size: 16px; margin-bottom: 5px; }
+        .result-value { color: #82d13d; font-size: 32px; font-weight: bold; margin: 0; }
+
+        .btn-apply { background-color: #82d13d; color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 30px; }
+        
+        .features { margin-top: 20px; }
+        .feature-item { display: flex; align-items: center; margin-bottom: 20px; justify-content: space-between; }
+        .feature-left { display: flex; align-items: center; }
+        .feature-icon { font-size: 24px; margin-right: 15px; width: 30px; text-align: center; }
+        .feature-main { font-weight: bold; font-size: 14px; color: #333; }
+        .feature-sub { font-size: 12px; color: #888; text-align: right; }
+
+        .copyright { text-align: center; font-size: 12px; color: #aaa; margin-top: auto; padding: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">Waafi <span style="color:#333">☰</span></div>
+    <h2>Hel Amaah Deg Deg ah</h2>
+    <div class="subtext">Ansixid degdeg ah • Qiimo tartan ah • Muddooyin dabacsan</div>
+
+    <div class="slider-section">
+        <div class="slider-header"><span>Qaddarka Amaahda</span> <span id="valAmt" class="green-text">$1,000</span></div>
+        <input type="range" id="amt" min="100" max="5000" step="100" value="1000" oninput="update()">
+        <div class="slider-footer"><span>$100</span><span>$5,000</span></div>
+    </div>
+
+    <div class="slider-section">
+        <div class="slider-header"><span>Muddada Amaahda</span> <span id="valDur" class="green-text">12 bilood</span></div>
+        <input type="range" id="dur" min="6" max="60" step="6" value="12" oninput="update()">
+        <div class="slider-footer"><span>6 bilood</span><span>60 bilood</span></div>
+    </div>
+
+    <div class="result-container">
+        <div class="result-label">Lacagta Bisha</div>
+        <p id="monthly" class="result-value">$98.33</p>
+    </div>
+
+    <button class="btn-apply" onclick="submitRequest()">CODSO HADDA</button>
+
+    <div class="features">
+        <div class="feature-item">
+            <div class="feature-left"><span class="feature-icon">⚡</span><span class="feature-main">Ansixid Degdeg ah</span></div>
+            <div class="feature-sub">24 saac<br>gudahood</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-left"><span class="feature-icon">💰</span><span class="feature-main">Qiimo Yar</span></div>
+            <div class="feature-sub">Laga bilaabo 18%</div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-left"><span class="feature-icon">🔒</span><span class="feature-main">Amaan ah</span></div>
+            <div class="feature-sub">Heer banki</div>
+        </div>
+    </div>
+</div>
+
+<div class="copyright">© 2025 Waafi Soomaaliya</div>
+
+<script>
+    function update() {
+        const a = Number(document.getElementById('amt').value);
+        const d = Number(document.getElementById('dur').value);
+
+        document.getElementById('valAmt').innerText = `$${a.toLocaleString()}`;
+        document.getElementById('valDur').innerText = `${d} bilood`;
+
+        const totalWithInterest = a * 1.18;
+        const monthly = totalWithInterest / d;
+
+        document.getElementById('monthly').innerText = `$${monthly.toFixed(2)}`;
+    }
+
+    function submitRequest() {
+        const tg = window.Telegram?.WebApp;
+
+        if (!tg) {
+            alert("Open this inside Telegram");
+            return;
+        }
+
+        tg.sendData(JSON.stringify({
+            amount: Number(document.getElementById('amt').value),
+            duration: Number(document.getElementById('dur').value)
+        }));
+
+        tg.close();
+    }
+
+    window.onload = () => {
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.ready();
+        }
+        update();
+    };
+</script>
+
+</body>
+  </html>
