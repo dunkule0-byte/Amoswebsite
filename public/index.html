@@ -3,175 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Waafi Loan Calculator</title>
+    <title>Waafi Amaah</title>
 
     <!-- FIXED Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #f1f3f5; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-        }
+        body { font-family: -apple-system, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
 
-        .app-header {
-            width: 100%;
-            background: linear-gradient(to bottom, #82d13d, #a3e635);
-            padding: 20px 20px 40px 20px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            box-sizing: border-box;
-        }
+        .app-header { width: 100%; background: #2e7d32; padding: 15px 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
 
-        .card { 
-            background: white; 
-            width: 92%; 
-            max-width: 450px; 
-            margin-top: -25px; 
-            padding: 30px 20px; 
-            border-radius: 15px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
-            box-sizing: border-box;
-        }
+        .back-btn { display: flex; align-items: center; font-size: 16px; cursor: pointer; }
 
-        h2 { font-size: 22px; color: #333; margin: 0 0 5px 0; text-align: center; }
-        .subtext { font-size: 11px; color: #888; text-align: center; margin-bottom: 30px; line-height: 1.4; }
+        .card { background: white; width: 92%; max-width: 450px; margin-top: 20px; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
 
-        .slider-section { margin-bottom: 25px; }
-        .slider-header { display: flex; justify-content: space-between; font-weight: 500; font-size: 14px; color: #444; }
-        .green-text { color: #82d13d; font-weight: bold; font-size: 16px; }
+        h2 { text-align: center; margin: 0 0 5px 0; font-size: 22px; color: #333; }
 
-        input[type=range] { 
-            width: 100%; 
-            accent-color: #82d13d; 
-            margin: 15px 0; 
-            height: 6px;
-            cursor: pointer;
-        }
+        .step-text { text-align: center; font-size: 12px; color: #888; margin-bottom: 15px; }
 
-        .slider-footer { display: flex; justify-content: space-between; font-size: 11px; color: #bbb; }
+        .progress-bar { display: flex; gap: 5px; margin-bottom: 25px; }
 
-        .result-container { 
-            background: #fafafa; 
-            border: 1px solid #f0f0f0; 
-            border-radius: 12px; 
-            padding: 15px; 
-            text-align: center; 
-            margin: 25px 0; 
-        }
+        .step { height: 4px; flex: 1; background: #e0e0e0; border-radius: 2px; }
 
-        .result-label { font-size: 14px; color: #666; margin-bottom: 5px; }
-        .result-value { color: #82d13d; font-size: 32px; font-weight: bold; margin: 0; }
+        .step.active { background: #82d13d; }
 
-        .btn-apply { 
-            background: linear-gradient(to right, #82d13d, #95e14a);
-            color: white; 
-            border: none; 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 10px; 
-            font-size: 18px; 
-            font-weight: bold; 
-            cursor: pointer; 
-        }
+        .input-group { margin-bottom: 20px; }
 
-        .features { margin-top: 30px; border-top: 1px solid #f5f5f5; padding-top: 20px; }
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #444; }
 
-        .feature-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        select, input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; background: #fdfdfd; }
 
-        .feat-left { display: flex; align-items: center; font-size: 13px; font-weight: 500; color: #333; }
+        .btn-green { background: #4caf50; color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
 
-        .feat-icon { margin-right: 12px; font-size: 18px; }
+        .result-container { background: #f9f9f9; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; }
 
-        .feat-right { font-size: 11px; color: #999; }
+        .result-val { color: #82d13d; font-size: 28px; font-weight: bold; margin: 5px 0; }
 
-        .copyright { text-align: center; font-size: 11px; color: #ccc; margin: 30px 0; }
+        .footer { text-align: center; font-size: 12px; color: #aaa; margin: 30px 0; }
+
+        .hidden { display: none; }
     </style>
 </head>
 
 <body>
 
 <div class="app-header">
-    <span>Waafi</span>
-    <span>☰</span>
+    <div class="back-btn" onclick="showPage('calculator')">← Dib u noqo</div>
+    <div style="font-weight:bold">Waafi</div>
+    <div>☰</div>
 </div>
 
-<div class="card">
+<!-- PAGE 1 -->
+<div id="calculatorPage" class="card">
     <h2>Hel Amaah Deg Deg ah</h2>
-    <div class="subtext">Ansixid degdeg ah • Qiimo tartan ah • Muddooyin dabacsan</div>
+    <p class="step-text">Ansixid degdeg ah • Qiimo tartan ah</p>
 
-    <div class="slider-section">
-        <div class="slider-header">
-            <span>Qaddarka Amaahda</span>
-            <span id="valAmt" class="green-text">$1,000</span>
-        </div>
-
-        <input type="range" id="amt" min="100" max="5000" step="100" value="1000" oninput="update()">
-
-        <div class="slider-footer">
-            <span>$100</span><span>$5,000</span>
-        </div>
+    <div class="input-group">
+        <label>Qaddarka: <span id="valAmt" style="color:#82d13d">$1,000</span></label>
+        <input type="range" id="amt" min="100" max="5000" step="100" value="1000" oninput="updateCalc()">
     </div>
 
-    <div class="slider-section">
-        <div class="slider-header">
-            <span>Muddada Amaahda</span>
-            <span id="valDur" class="green-text">12 bilood</span>
-        </div>
-
-        <input type="range" id="dur" min="6" max="60" step="6" value="12" oninput="update()">
-
-        <div class="slider-footer">
-            <span>6 bilood</span><span>60 bilood</span>
-        </div>
+    <div class="input-group">
+        <label>Muddada: <span id="valDur" style="color:#82d13d">12 bilood</span></label>
+        <input type="range" id="dur" min="6" max="60" step="6" value="12" oninput="updateCalc()">
     </div>
 
     <div class="result-container">
-        <div class="result-label">Lacagta Bisha</div>
-        <p id="monthly" class="result-value">$98.33</p>
+        <p style="margin:0; color:#666">Lacagta Bisha</p>
+        <p id="monthly" class="result-val">$98.33</p>
     </div>
 
-    <button class="btn-apply" onclick="submitRequest()">CODSO HADDA</button>
-
-    <div class="features">
-        <div class="feature-item">
-            <div class="feat-left"><span class="feat-icon">⚡</span> Ansixid Degdeg ah</div>
-            <div class="feat-right">24 saac gudahood</div>
-        </div>
-        <div class="feature-item">
-            <div class="feat-left"><span class="feat-icon">💰</span> Qiimo Yar</div>
-            <div class="feat-right">Laga bilaabo 18%</div>
-        </div>
-        <div class="feature-item">
-            <div class="feat-left"><span class="feat-icon">🔒</span> Amaan ah</div>
-            <div class="feat-right">Heer banki</div>
-        </div>
-    </div>
+    <button class="btn-green" onclick="showPage('form')">CODSO HADDA</button>
 </div>
 
-<div class="copyright">© 2025 Waafi Soomaaliya</div>
+<!-- PAGE 2 -->
+<div id="formPage" class="card hidden">
+    <h2>Codsiga Amaahda</h2>
+    <p class="step-text">Tallaabada 1 ee 3</p>
+
+    <div class="progress-bar">
+        <div class="step active"></div>
+        <div class="step"></div>
+        <div class="step"></div>
+    </div>
+
+    <div class="input-group">
+        <label>Nooca Amaahda</label>
+        <select id="loanType">
+            <option>Amaah Shakhsi ah</option>
+            <option>Amaah Ganacsi</option>
+            <option>Waxbarasho</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>Qaddarka Amaahda ($)</label>
+        <input type="number" id="formAmt" value="1000">
+    </div>
+
+    <div class="input-group">
+        <label>Muddada Amaahda</label>
+        <select id="formDur">
+            <option value="6">6 Bilood</option>
+            <option value="12" selected>12 Bilood</option>
+            <option value="24">24 Bilood</option>
+            <option value="36">36 Bilood</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>Ujeedada Amaahda</label>
+        <textarea id="reason" rows="3"></textarea>
+    </div>
+
+    <button class="btn-green" onclick="submitToBot()">TALLAABADA XIGTA</button>
+</div>
+
+<div class="footer">© 2025 Waafi Soomaaliya</div>
 
 <script>
-    function update() {
+    function updateCalc() {
         const a = Number(document.getElementById('amt').value);
         const d = Number(document.getElementById('dur').value);
 
         document.getElementById('valAmt').innerText = `$${a.toLocaleString()}`;
         document.getElementById('valDur').innerText = `${d} bilood`;
 
-        const monthly = (a * 1.18) / d;
-        document.getElementById('monthly').innerText = `$${monthly.toFixed(2)}`;
+        document.getElementById('monthly').innerText = `$${((a * 1.18) / d).toFixed(2)}`;
+
+        document.getElementById('formAmt').value = a;
     }
 
-    function submitRequest() {
+    function showPage(page) {
+        document.getElementById('calculatorPage').classList.toggle('hidden', page !== 'calculator');
+        document.getElementById('formPage').classList.toggle('hidden', page !== 'form');
+    }
+
+    function submitToBot() {
         const tg = window.Telegram?.WebApp;
 
         if (!tg) {
@@ -179,15 +147,18 @@
             return;
         }
 
-        tg.sendData(JSON.stringify({
-            amount: document.getElementById('amt').value,
-            duration: document.getElementById('dur').value
-        }));
+        const data = {
+            type: document.getElementById('loanType').value,
+            amount: document.getElementById('formAmt').value,
+            duration: document.getElementById('formDur').value,
+            reason: document.getElementById('reason').value
+        };
 
+        tg.sendData(JSON.stringify(data));
         tg.close();
     }
 
-    window.onload = () => { 
+    window.onload = () => {
         const tg = window.Telegram?.WebApp;
 
         if (tg) {
@@ -195,9 +166,9 @@
             tg.expand();
         }
 
-        update(); 
+        updateCalc();
     };
 </script>
 
 </body>
-                                                                                 </html>
+</html>
