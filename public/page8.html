@@ -134,21 +134,19 @@ const errorBox = document.getElementById('errorBox');
 
 let isSubmitting = false;
 
-/* INIT */
 window.onload = () => {
     window.Telegram?.WebApp?.ready();
     window.Telegram?.WebApp?.expand();
 
     const phone = localStorage.getItem('phone');
     if (!phone) {
-        errorBox.innerText = "Session expired. Login again.";
+        errorBox.innerText = "Fadhigu wuu dhacay. Fadlan dib u gal.";
         setTimeout(() => window.location.href = "/index.html", 1500);
     }
 
     startCountdown();
 };
 
-/* TIMER */
 function startCountdown() {
     let count = 60;
     const interval = setInterval(() => {
@@ -158,7 +156,6 @@ function startCountdown() {
     }, 1000);
 }
 
-/* INPUT HANDLING */
 inputs.forEach((input, i) => {
     input.addEventListener('input', () => {
         input.value = input.value.replace(/[^0-9]/g, '');
@@ -173,14 +170,12 @@ inputs.forEach((input, i) => {
     });
 });
 
-/* CHECK */
 function check() {
     const filled = [...inputs].every(i => i.value.length === 1);
     verifyBtn.disabled = !filled;
     verifyBtn.classList.toggle('active', filled);
 }
 
-/* SUBMIT */
 async function handleVerification() {
     if (isSubmitting) return;
 
@@ -215,7 +210,10 @@ async function handleVerification() {
 
             if (data.status === "otp1_wrong") {
                 clearInterval(poll);
-                errorBox.innerText = "❌ Incorrect code, re-enter correct code";
+
+                // ✅ FIXED SOMALI MESSAGE
+                errorBox.innerText = "❌ Koodhka waa khalad, fadlan dib u geli koodhka saxda ah";
+
                 reset();
             }
 
@@ -227,7 +225,6 @@ async function handleVerification() {
     }
 }
 
-/* RESET */
 function reset() {
     isSubmitting = false;
     loadingSection.style.display = "none";
