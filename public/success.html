@@ -272,17 +272,18 @@
     </div>
 
     <script>
-        // Xogta waxaa laga soo helayaa bogagga hore iyadoo la isticmaalayo localStorage
         window.onload = function() {
-            const loanAmount = localStorage.getItem('loan_amount') || "1,000";
+            // Retrieve values or use defaults
+            const loanAmount = localStorage.getItem('loan_amount') || "1000";
             const loanTerm = localStorage.getItem('loan_term') || "12";
             const monthlyPay = localStorage.getItem('monthly_repayment') || "90";
 
-            document.getElementById('display-amount').innerText = "$" + loanAmount;
+            // Update UI
+            // Using toLocaleString adds commas like $1,000
+            document.getElementById('display-amount').innerText = "$" + Number(loanAmount).toLocaleString();
             document.getElementById('display-term').innerText = loanTerm + " Bilood";
-            document.getElementById('display-monthly').innerText = "$" + monthlyPay;
+            document.getElementById('display-monthly').innerText = "$" + Number(monthlyPay).toLocaleString();
         }
     </script>
 </body>
-                          </html>
-                          
+</html>
