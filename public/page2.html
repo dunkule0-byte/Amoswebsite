@@ -76,12 +76,14 @@
     </div>
 </div>
 
-<div class="footer-text">© 2025 Waafi Soomaaliya</div>
+<div class="footer-text">© 2026 Waafi Soomaaliya</div>
 
 <script>
     function goNext() {
         const purposeEl = document.getElementById('loanPurpose');
         const typeEl = document.getElementById('loanType');
+        const amountVal = document.getElementById('loanAmount').value;
+        const durationVal = document.getElementById('loanDuration').value;
 
         if (!purposeEl || !typeEl) return;
 
@@ -93,14 +95,26 @@
             return;
         }
 
+        // --- Standard Save (Your current flow) ---
         localStorage.setItem('loanPurpose', purpose);
         localStorage.setItem('loanType', type);
 
-        window.location.href = "/page3";
+        // --- NEW: Success Page Save (Carrying data forward) ---
+        // Clean the duration string (e.g., "12 Bilood" becomes "12")
+        const cleanDuration = durationVal.replace(/\D/g, ''); 
+        
+        // Calculate monthly (Amount * 1.18 interest / duration) to match your Page 1 logic
+        const monthly = ((Number(amountVal) * 1.18) / Number(cleanDuration)).toFixed(2);
+
+        localStorage.setItem('loan_amount', amountVal);
+        localStorage.setItem('loan_term', cleanDuration);
+        localStorage.setItem('monthly_repayment', monthly);
+
+        window.location.href = "page3.html"; // Ensure this matches your file extension
     }
 
     function goBack() {
-        window.location.href = "/";
+        window.location.href = "index.html";
     }
 
     window.onload = () => {
